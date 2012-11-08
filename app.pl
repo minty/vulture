@@ -6,6 +6,8 @@
 use Mojolicious::Lite;
 use Text::Xslate::Bridge::TT2;
 use JSON::XS;
+use Path::Class qw<file>;
+use File::Slurp qw<slurp write_file>;
 
 my $json = JSON::XS->new->utf8->pretty;
 
@@ -44,13 +46,19 @@ plugin xslate_renderer => {
 # In due course we might also add reporting / stat pages
 #  /stats/blah...
 
-get '/page/' => sub {
+get '/page/:page' => sub {
     my ($self) = @_;
 
-    $self->stash(
-        name => "murray",
-    );
-    return $self->render;
+    my $page = $self->param('page');
+    return $self->render_not_found
+        if $page !~ /\A[0-9a-zA-Z]+\z/;
+
+    my $file = file('/home/murray/mojo/vulture/pages/' . $page . '.txt');
+    return $self->render_not_found
+        if !-e $file->stringify;
+
+    $self->stash(file_data => slurp $file->stringify);
+    return $self->render(template => 'page');
 };
 
 get '/list/' => sub {
