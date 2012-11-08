@@ -1,0 +1,3 @@
+[% WRAPPER "_page.tx" WITH body_class = 'index', type = 'index' %]
+<h1>[% name %]</h1>
+[% END %]

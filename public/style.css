@@ -1,0 +1,13 @@
+body {
+  font-family: sans-serif;
+}
+form label {
+  display: block;
+  position: relative;
+  height: 2em;
+}
+form label input {
+  position: absolute;
+  left: 5em;
+  width: 30em;
+}
