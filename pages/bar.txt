@@ -5,11 +5,6 @@
 <input id=work  type=button value=work>
 
 <ul>
-  <li>execute task</li>
-  <li>- construct script tag</li>
-  <li>- inject test into text body of tag</li>
-  <li>- remove any existing script blocks matching our class</li>
-  <li>- append to $('body') our new tag</li>
   <li>tell server we're done</li>
   <li>alert</li>
   <li>repeat</li>
@@ -17,12 +12,14 @@
 
 <script type="text/javascript">
   $(function() {
-    console.log('hello world');
 
     $('#work').on('click', function(e) {
         $.ajax('/api/task/get', {
             'success': function(data) {
-                alert( data.run.task.test );
+                $('.autoscript').remove();
+                var script = $('<script class=autoscript type="text/javascript"><' + '/script>');
+                script.text( data.run.task.test );
+                $('body').append(script);
             }
         });
     });
