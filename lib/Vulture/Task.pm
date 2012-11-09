@@ -3,6 +3,8 @@ package Vulture::Task;
 use Mojo::Base 'Mojolicious::Controller';
 
 use common::sense;
+use Path::Class;
+use File::Slurp qw<slurp>;
 
 sub api_list {
     my ($self) = @_;
@@ -50,10 +52,20 @@ sub get {
     my $task = $self->schema->resultset('Task')->find( $clienttask->task_id )
         or return $self->to_json({ retry => 1 });
 
-    # XXX
-    # Slurp in the javascript from file for task id ...
-    # Return that javascript as a string to the client
-    return $self->to_json({ run => { task => $task->id } });
+    my $file = Path::Class::File->new('/home/murray/mojo/vulture/tests/' . $task->test_id . '.txt');
+
+    return $self->render_not_found
+        if !-e $file->stringify;
+
+    return $self->to_json({ run => { task => {
+        id => $task->id,
+        test => scalar $file->slurp,
+    } } });
+
+    # build test page
+    # have it join the api
+    # have it fetch a task
+    # have it execute the task
 }
 
 #get '/api/task/done' => sub {

@@ -5,6 +5,7 @@
         font-family: sans-serif;
       }
     </style>
+    <script type="text/javascript" src="/jquery.js"></script>
   </head>
   <body class="[% body_class || 'empty' %]">[% content %]</body>
 </html>
