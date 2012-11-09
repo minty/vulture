@@ -66,7 +66,9 @@ sub active_clients {
 }
 get '/api/client/list/' => sub {
     my ($self) = @_;
-    return _json($self, [ map { $_->agent } active_clients()->all ]);
+    my $clients = active_clients();
+    $clients->result_class('DBIx::Class::ResultClass::HashRefInflator');
+    return _json($self, [ map { $_ } $clients->all ]);
 };
 get '/client/list/' => sub {
     my ($self) = @_;
