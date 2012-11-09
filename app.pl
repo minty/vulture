@@ -61,12 +61,65 @@ plugin xslate_renderer => {
 # In due course we might also add reporting / stat pages
 #  /stats/blah...
 
+sub active_clients {
+    return $schema->resultset('Client')->search_rs({ active => 1 });
+}
 get '/api/client/list/' => sub {
     my ($self) = @_;
+    return _json($self, [ map { $_->agent } active_clients()->all ]);
+};
+get '/client/list/' => sub {
+    my ($self) = @_;
+    $self->stash(clients => active_clients());
+    return $self->render(template => 'client/list');
+};
 
-    my @rows = map { $_->agent } $schema->resultset('Client')->search->all;
+sub ua_ip {
+    my ($self) = @_;
 
-    return _json($self, \@rows);
+    return ($self->req->headers->user_agent, $self->tx->remote_address);
+}
+# XXX post
+get '/api/client/join/' => sub {
+    my ($self) = @_;
+
+    my ($ua, $ip) = ua_ip($self);
+    my $rs = $schema->resultset('Client');
+    my $client = $rs->find({
+        agent => $ua,
+        ip    => $ip,
+    });
+    if ($client) { $client->update({ active => 1 }) }
+    else         {
+        $client = $rs->create({
+            agent     => $ua,
+            ip        => $ip,
+            active    => 1,
+            joined_at => time,
+        });
+    }
+    return _json($self, { joined => { ip => $ip, agent => $ua } });
+};
+get '/api/client/leave/' => sub {
+    my ($self) = @_;
+
+    my ($ua, $ip) = ua_ip($self);
+    my $rs = $schema->resultset('Client');
+    my $client = $rs->find({
+        agent => $ua,
+        ip    => $ip,
+    });
+    if ($client) {
+        $client->update({ active => 0 });
+        return _json($self, { left => { ip => $ip, agent => $ua } });
+    }
+    else {
+        return _json($self, { error => { slug => 'unknown client' } });
+    }
+
+    # first see if there is an existing client with the current ip/ua
+    # if so, make it in-active and return
+    # else return an "unknown" error
 };
 
 get '/page/:page' => sub {

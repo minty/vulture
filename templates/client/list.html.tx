@@ -1,0 +1,8 @@
+[% WRAPPER "_page.tx" WITH body_class = 'index', type = 'index' %]
+<h1>client list</h1>
+<ul>
+  [% WHILE (client = clients.next) %]
+    <li>[% client.agent %]</li>
+  [% END %]
+</ul>
+[% END %]
