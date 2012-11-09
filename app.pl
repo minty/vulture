@@ -63,12 +63,50 @@ plugin xslate_renderer => {
 
 get '/api/task/get' => sub {
     my ($self) = @_;
-    # Look to see if there is a pending test for this client in the db
-    #   update the db accordingly
-    #   return task
-    # else
-    #   sleep / block for 30 seconds
-    #   return { retry => 1 }
+
+    my ($ua, $ip) = ua_ip($self);
+    my $rs = $schema->resultset('Client');
+    my $client = $rs->find({
+        agent => $ua,
+        ip    => $ip,
+    });
+    return _json($self, { error => { slug => 'unknown client' } })
+        if !$client;
+
+    # XXX
+    # Check there are no running tasks for this client
+    # If so, refuse to issue more work until that task is done.
+    # A well behaved client *should* never request more work, but it might.
+
+    my $clienttask = $schema->resultset('ClientTask')->search({
+        client_id => $client->id,
+        state     => 'pending',
+    }, {
+        order_by => { -asc => 'created_at' },
+        rows     => 1,
+    })->single;
+
+    # Mojolicious::Guides::Cookbook
+    # http://mojolicio.us/perldoc/Mojolicious/Guides/Cookbook#REALTIME_WEB
+    return _json($self, { retry => 1 })
+        if !$clienttask;
+
+    my $task = $schema->resultset('Task')->find( $clienttask->task_id )
+        or return _json($self, { retry => 1 });
+
+    # XXX
+    # Slurp in the javascript from file for task id ...
+    # Return that javascript as a string to the client
+    return _json($self, { run => { task => $task->id } });
+};
+
+get '/api/task/done' => sub {
+    my ($self) = @_;
+
+    my ($ua, $ip) = ua_ip($self);
+    # Expect a task id
+    # and a result string
+    my $rs = $schema->resultset('Client');
 };
 
 # XXX POST
