@@ -84,10 +84,21 @@ get '/api/run/:id' => sub {
         created_at => time,
         state      => 'pending',
     };
-    my $task = $schema->resultset('Task')->create($data);
-    $data->{id} = $task->id;
+    $schema->txn_do(sub {
+        my $task = $schema->resultset('Task')->create($data);
+        $data->{id} = $task->id;
 
-    # Now create a client_task for each active client
+        # Now create a client_task for each active client
+        my $clients = active_clients();
+        for my $client ($clients->all) {
+            $schema->resultset('ClientTask')->create({
+                task_id    => $task->id,
+                client_id  => $client->id,
+                created_at => time,
+                state      => 'pending',
+            });
+        }
+    });
 
     # my $file = file("/home/murray/mojo/vulture/tests/$id.txt");
     return _json($self, { run => $data });

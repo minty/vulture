@@ -16,3 +16,15 @@ CREATE TABLE task (
     finished_at INTEGER,
     state       CHAR(10) NOT NULL default 'pending'
 );
+
+DROP TABLE IF EXISTS client_task;
+CREATE TABLE client_task (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    task_id     INTEGER NOT NULL,
+    client_id   INTEGER NOT NULL,
+    created_at  INTEGER NOT NULL,
+    started_at  INTEGER,
+    finished_at INTEGER,
+    state       CHAR(10) NOT NULL default 'pending',
+    result      TEXT
+);
