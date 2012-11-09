@@ -1,7 +1,19 @@
 #!/usr/bin/env perl
 
+# setup with
+#   sqlite3 vulture.sqlite < ./schema.sql
+#
 # run with
-# morbo -l "https://192.168.58.100:8899" ./app.pl
+#   morbo -l "https://192.168.58.100:8899" ./app.pl
+
+package VultureDB;
+use base 'DBIx::Class::Schema::Loader';
+
+__PACKAGE__->naming('current');
+__PACKAGE__->use_namespaces(1);
+__PACKAGE__->loader_options();
+
+package main;
 
 use Mojolicious::Lite;
 use Text::Xslate::Bridge::TT2;
@@ -9,7 +21,9 @@ use JSON::XS;
 use Path::Class qw<file>;
 use File::Slurp qw<slurp write_file>;
 
-my $json = JSON::XS->new->utf8->pretty;
+my $json   = JSON::XS->new->utf8->pretty;
+my $sql_db = '/home/murray/mojo/vulture/vulture.sqlite';
+my $schema = VultureDB->connect("dbi:SQLite:dbname=$sql_db", '', '', {});
 
 app->secret('testers testers testers');
 
@@ -37,6 +51,7 @@ plugin xslate_renderer => {
 #   # Let a browser join/leave a test pool
 #   /api/client/join/
 #   /api/client/leave/
+#   /api/client/list/
 #
 #   # schedule a test to be run on all current clients
 #   /api/test/run/?test_file
@@ -45,6 +60,14 @@ plugin xslate_renderer => {
 #
 # In due course we might also add reporting / stat pages
 #  /stats/blah...
+
+get '/api/client/list/' => sub {
+    my ($self) = @_;
+
+    my @rows = map { $_->agent } $schema->resultset('Client')->search->all;
+
+    return _json($self, \@rows);
+};
 
 get '/page/:page' => sub {
     my ($self) = @_;
@@ -73,5 +96,15 @@ post '/reset/' => sub {
     my $name  = $self->param('name');
     return $self->render(text => $json->encode({}));
 };
+
+
+# We do this, rather than $self->render(json => $ref)
+# so we can pretty-ify the json for human eyes.  It's also shorter.
+sub _json {
+    my ($self, $ref) = @_;
+
+    $self->res->headers->header('Content-type' => 'application/json; charset=utf-8');
+    return $self->render(text => $json->encode( $ref ));
+}
 
 app->start;

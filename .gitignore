@@ -1,4 +1,5 @@
 *.swp
+vulture.sqlite
 tmp/
 blib/
 .build/
