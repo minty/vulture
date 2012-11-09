@@ -61,14 +61,52 @@ plugin xslate_renderer => {
 # In due course we might also add reporting / stat pages
 #  /stats/blah...
 
-sub active_clients {
-    return $schema->resultset('Client')->search_rs({ active => 1 });
-}
+get '/api/task/get' => sub {
+    my ($self) = @_;
+    # Look to see if there is a pending test for this client in the db
+    #   update the db accordingly
+    #   return task
+    # else
+    #   sleep / block for 30 seconds
+    #   return { retry => 1 }
+};
+
+# XXX POST
+get '/api/run/:id' => sub {
+    my ($self) = @_;
+
+    my $id = $self->param('id');
+    return $self->render_not_found
+        if $id !~ /\A[0-9]+\z/;
+
+    my $data = {
+        test_id    => $id,
+        created_at => time,
+        state      => 'pending',
+    };
+    my $task = $schema->resultset('Task')->create($data);
+    $data->{id} = $task->id;
+
+    # Now create a client_task for each active client
+
+    # my $file = file("/home/murray/mojo/vulture/tests/$id.txt");
+    return _json($self, { run => $data });
+};
+get '/api/task/list/:state' => sub {
+    my ($self) = @_;
+    my $tasks = active_tasks($self->param('state'));
+    api_list($self, $tasks);
+};
+get '/task/list/:state' => sub {
+    my ($self) = @_;
+    $self->stash(tasks => active_tasks($self->param('state')));
+    return $self->render(template => 'task/list');
+};
+
 get '/api/client/list/' => sub {
     my ($self) = @_;
     my $clients = active_clients();
-    $clients->result_class('DBIx::Class::ResultClass::HashRefInflator');
-    return _json($self, [ map { $_ } $clients->all ]);
+    api_list($self, $clients);
 };
 get '/client/list/' => sub {
     my ($self) = @_;
@@ -76,11 +114,6 @@ get '/client/list/' => sub {
     return $self->render(template => 'client/list');
 };
 
-sub ua_ip {
-    my ($self) = @_;
-
-    return ($self->req->headers->user_agent, $self->tx->remote_address);
-}
 # XXX post
 get '/api/client/join/' => sub {
     my ($self) = @_;
@@ -160,6 +193,27 @@ sub _json {
 
     $self->res->headers->header('Content-type' => 'application/json; charset=utf-8');
     return $self->render(text => $json->encode( $ref ));
+}
+
+sub api_list {
+    my ($self, $rs) = @_;
+    $rs->result_class('DBIx::Class::ResultClass::HashRefInflator');
+    return _json($self, [ map { $_ } $rs->all ]);
+}
+
+sub ua_ip {
+    my ($self) = @_;
+
+    return ($self->req->headers->user_agent, $self->tx->remote_address);
+}
+
+sub active_tasks {
+    my ($state) = @_;
+    return $schema->resultset('Task')->search_rs({ state => $state });
+}
+
+sub active_clients {
+    return $schema->resultset('Client')->search_rs({ active => 1 });
 }
 
 app->start;

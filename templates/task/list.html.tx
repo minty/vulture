@@ -1,0 +1,8 @@
+[% WRAPPER "_page.tx" WITH body_class = 'index', type = 'index' %]
+<h1>task list</h1>
+<ul>
+  [% WHILE (task = tasks.next) %]
+    <li>[% task.id %] : [% task.test_id %] at [% task.created_at %]</li>
+  [% END %]
+</ul>
+[% END %]
