@@ -12,6 +12,7 @@ package Vulture;
 # stats pages
 
 use Mojo::Base 'Mojolicious';
+use Mojo::IOLoop;
 use Text::Xslate::Bridge::TT2;
 use JavaScript::Value::Escape;
 use JSON::XS;
@@ -65,9 +66,11 @@ sub startup {
     # We do this, rather than $self->render(json => $ref)
     # so we can pretty-ify the json for human eyes.  It's also shorter.
     $self->helper(to_json => sub {
-        my ($self, $ref) = @_;
-        $self->res->headers->header('Content-type' => 'application/json; charset=utf-8');
-        return $self->render(data => $self->json->encode( $ref ));
+        my ($self, $ref, $args) = @_;
+        $args //= {};
+        my $delay = $args->{delay} ? $args->{delay} : 0;
+        if ($delay) { Mojo::IOLoop->timer($delay => sub { _to_json($self, $ref) }) }
+        else        { _to_json($self, $ref) }
     });
 
     $self->helper(to_api_list => sub {
@@ -117,6 +120,12 @@ sub startup {
 
     $r->get('/page/:page')
         ->to(controller => 'page', action => 'page');
+}
+
+sub _to_json {
+    my ($self, $ref) = @_;
+    $self->res->headers->header('Content-type' => 'application/json; charset=utf-8');
+    return $self->render(data => $self->json->encode( $ref ));
 }
 
 1;
