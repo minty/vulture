@@ -71,8 +71,7 @@ sub get {
     my $task = $self->schema->resultset('Task')->find( $clienttask->task_id )
         or return $self->to_json({ retry => 1 });
 
-    my $file = Path::Class::File->new('/home/murray/mojo/vulture/tests/' . $task->test_id . '.txt');
-
+    my $file = $self->filepath('/tests/' . $task->test_id);
     return $self->render_not_found
         if !-e $file->stringify;
 
@@ -162,7 +161,6 @@ sub run {
         }
     });
 
-    # my $file = file("/home/murray/mojo/vulture/tests/$id.txt");
     return $self->to_json({ run => $data });
 }
 

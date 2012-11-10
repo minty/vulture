@@ -23,16 +23,14 @@ use Vulture::Schema;
 
 # https://github.com/oyvindkinsey/easyXDM#readme
 
-my $sql_db = '/home/murray/mojo/vulture/vulture.sqlite';
-
 # This method will run once at server start
 sub startup {
     my ($self) = @_;
 
     # config / setup
-    #$self->plugin(Config => {
-    #    file => 'etc/ffax.conf'
-    #});
+    $self->plugin(Config => {
+        file => 'etc/vulture.conf'
+    });
     $self->plugin(xslate_renderer => {
         template_options => {
             syntax  => 'TTerse',
@@ -45,6 +43,7 @@ sub startup {
         }
     });
 
+    my $sql_db = $self->config->{repo_dir} . '/vulture.sqlite';
     $self->helper(schema => sub {
         state $db = Vulture::Schema->connect("dbi:SQLite:dbname=$sql_db");
         return $db;
@@ -53,6 +52,13 @@ sub startup {
     $self->helper(json => sub {
         state $json = JSON::XS->new->utf8->pretty;
         return $json;
+    });
+
+    $self->helper(filepath => sub {
+        my ($self, $rel) = @_;
+        return Path::Class::File->new(
+            $self->config->{repo_dir} . "$rel.txt"
+        );
     });
 
     # We do this, rather than $self->render(json => $ref)
