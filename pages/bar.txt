@@ -6,6 +6,8 @@
 <input id=stop  type=button value=stop>
 <p>current working state: <span id=msg></span></p>
 
+<div id=log></div>
+
 <script type="text/javascript">
   $(function() {
 

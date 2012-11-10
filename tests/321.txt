@@ -1,0 +1,4 @@
+var now = new Date;
+$('#log').prepend(
+    $('<p>The time is ' + now + '</p>')
+);
