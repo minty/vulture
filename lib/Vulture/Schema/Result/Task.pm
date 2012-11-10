@@ -16,7 +16,6 @@ __PACKAGE__->add_columns(
 );
 __PACKAGE__->set_primary_key("id");
 
-#__PACKAGE__->has_many(photo_tags => 'WedPics::Schema::Result::PhotoTag', 'photo_id', { order_by => { -asc => 'pos_tag_in_photo' } });
-#__PACKAGE__->many_to_many(tags => 'photo_tags', 'tag');
+__PACKAGE__->has_many(client_tasks => 'Vulture::Schema::Result::ClientTask', 'task_id');
 
 1;
