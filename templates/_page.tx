@@ -4,8 +4,37 @@
       body {
         font-family: sans-serif;
       }
+      #log {
+        height: 20em;
+        overflow: auto;
+      }
+      #log p               { color: #ccc; font-size: 80% }
+      #log p:nth-child(1)  { color: #000 }
+      #log p:nth-child(2)  { color: #333 }
+      #log p:nth-child(3)  { color: #666 }
+      #log p:nth-child(4)  { color: #999 }
+      .clientlist {
+        font-size: 85%;
+        line-height: 1.5em;
+        padding: 1em;
+      }
+      .clientlist li:hover {
+        cursor: pointer;
+        text-decoration: underline;
+      }
     </style>
     <script type="text/javascript" src="/jquery.js"></script>
+    <script type="text/javascript">
+      $(function() {
+        $('.clientlist li').on('click', function(e) {
+        var o = $(this);
+        console.log(o.data('id'));
+        console.log(o.data('guid'));
+        console.log(o.data('sessionid'));
+        console.log(o.data('agent'));
+      });
+    });
+    </script>
   </head>
   <body class="[% body_class || 'empty' %]">[% content %]</body>
 </html>
