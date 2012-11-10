@@ -13,7 +13,7 @@ sub page {
     return $self->render_not_found
         if $page !~ /\A[0-9a-zA-Z]+\z/;
 
-    my $file = Path::Class::File->new('/home/murray/mojo/vulture/pages/' . $page . '.txt');
+    my $file = $self->filepath("/pages/$page");
 
     return $self->render_not_found
         if !-e $file->stringify;
