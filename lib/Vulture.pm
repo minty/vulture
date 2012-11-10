@@ -1,10 +1,11 @@
 package Vulture;
 
 # XXX
-# Use configs to avoid hardwired paths
-# Convert /get/task to be blocking
 # Have the client generate a uid, and use/log that in the db etc.
 #  - this will mean we could have multiple clients on the same ip, with the same useragent (aka, multiple tabs)
+# When creating the client tasks, also create a timer event that will auto
+#   terminate any client_tasks that have yet to get a response
+# Create an application level recurring timer to disconnect unresponsive clients
 # Adjust api/run/:id to only create one clienttask per unique ip^ua pair
 # Proxy fetch api
 # simple key-value store api
@@ -66,7 +67,7 @@ sub startup {
     $self->helper(to_json => sub {
         my ($self, $ref) = @_;
         $self->res->headers->header('Content-type' => 'application/json; charset=utf-8');
-        return $self->render(text => $self->json->encode( $ref ));
+        return $self->render(data => $self->json->encode( $ref ));
     });
 
     $self->helper(to_api_list => sub {
