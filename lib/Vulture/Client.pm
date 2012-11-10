@@ -26,6 +26,8 @@ sub join {
     my ($ua, $ip) = $self->ua_ip();
     my $guid      = $self->param('guid');
     my $sessionid = $self->param('sessionid');
+    return $self->to_json({ error => { slug => 'Missing guid/sessionid' } })
+        if !$guid || !$sessionid;
     my $rs = $self->schema->resultset('Client');
     my $client = $rs->find({
         agent     => $ua,
@@ -60,6 +62,8 @@ sub state {
     my $rs = $self->schema->resultset('Client');
     my $guid      = $self->param('guid');
     my $sessionid = $self->param('sessionid');
+    return $self->to_json({ error => { slug => 'Missing guid/sessionid' } })
+        if !$guid || !$sessionid;
     my $client = $rs->find({
         agent     => $ua,
         ip        => $ip,
@@ -78,6 +82,8 @@ sub leave {
     my $rs = $self->schema->resultset('Client');
     my $guid      = $self->param('guid');
     my $sessionid = $self->param('sessionid');
+    return $self->to_json({ error => { slug => 'Missing guid/sessionid' } })
+        if !$guid || !$sessionid;
     my $client = $rs->find({
         agent     => $ua,
         ip        => $ip,
