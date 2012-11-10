@@ -14,7 +14,18 @@ sub api_list {
 
 sub list {
     my ($self) = @_;
-    $self->stash(tasks => $self->active_tasks($self->param('state')));
+
+    my $state = $self->param('state');
+    if ($state eq 'all') {
+        $self->stash(states => $self->schema->resultset('Task')->search_rs({}, {
+            select   => ['state', { count => 'state' }],
+            as       => [qw<state number>],
+            group_by => 'state'
+        }));
+    }
+    else {
+        $self->stash(tasks => $self->active_tasks($self->param('state')));
+    }
     return $self->render(template => 'task/list');
 }
 

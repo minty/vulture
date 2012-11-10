@@ -1,8 +1,17 @@
 [% WRAPPER "_page.tx" WITH body_class = 'index', type = 'index' %]
-<h1>task list</h1>
-<ul>
-  [% WHILE (task = tasks.next) %]
-    <li>[% task.id %] : [% task.test_id %] at [% task.created_at %]</li>
-  [% END %]
-</ul>
+[% IF tasks %]
+  <h1>task list</h1>
+  <ul>
+    [% WHILE (task = tasks.next) %]
+      <li>[% task.id %] : [% task.test_id %] at [% task.created_at %]</li>
+    [% END %]
+  </ul>
+[% ELSE %]
+  <h1>task summary</h1>
+  <ul>
+    [% WHILE (state = states.next) %]
+      <li><a href="/task/list/[% state.state %]">[% state.state %] : [% state.get_column('number') %]</a></li>
+    [% END %]
+  </ul>
+[% END %]
 [% END %]
