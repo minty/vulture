@@ -35,6 +35,7 @@ sub get {
     my ($self) = @_;
 
     my ($ua, $ip) = $self->ua_ip();
+    my ($guid, $sessionid) = map { $self->param($_) } qw<guid sessionid>;
     my $rs = $self->schema->resultset('Client');
     my $client = $rs->find({
         agent     => $ua,
@@ -79,7 +80,7 @@ sub get {
     $id = Mojo::IOLoop->recurring($freq => sub {
 
         my $delta = time - $start;
-        warn "$delta : polling db for work";
+        warn "$delta : polling db for work for $guid / $sessionid";
         $clienttask = $self->schema->resultset('ClientTask')->search({
             client_id => $client->id,
             state     => 'pending',

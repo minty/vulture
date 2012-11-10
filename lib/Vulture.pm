@@ -1,8 +1,6 @@
 package Vulture;
 
 # XXX
-# Have the client generate a uid, and use/log that in the db etc.
-#  - this will mean we could have multiple clients on the same ip, with the same useragent (aka, multiple tabs)
 # When creating the client tasks, also create a timer event that will auto
 #   terminate any client_tasks that have yet to get a response
 # Create an application level recurring timer to disconnect unresponsive clients
