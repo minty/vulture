@@ -24,21 +24,32 @@ sub join {
     my ($self) = @_;
 
     my ($ua, $ip) = $self->ua_ip();
+    my $guid      = $self->param('guid');
+    my $sessionid = $self->param('sessionid');
     my $rs = $self->schema->resultset('Client');
     my $client = $rs->find({
-        agent => $ua,
-        ip    => $ip,
+        agent     => $ua,
+        ip        => $ip,
+        guid      => $guid,
+        sessionid => $sessionid,
     });
     if ($client) { $client->update({ active => 1 }) }
     else         {
         $client = $rs->create({
             agent     => $ua,
             ip        => $ip,
+            guid      => $guid,
+            sessionid => $sessionid,
             active    => 1,
             joined_at => time,
         });
     }
-    return $self->to_json({ joined => { ip => $ip, agent => $ua } });
+    return $self->to_json({ joined => {
+        agent     => $ua,
+        ip        => $ip,
+        guid      => $guid,
+        sessionid => $sessionid,
+    } });
 }
 
 #get '/api/client/leave/' => sub {
@@ -47,13 +58,22 @@ sub leave {
 
     my ($ua, $ip) = $self->ua_ip();
     my $rs = $self->schema->resultset('Client');
+    my $guid      = $self->param('guid');
+    my $sessionid = $self->param('sessionid');
     my $client = $rs->find({
-        agent => $ua,
-        ip    => $ip,
+        agent     => $ua,
+        ip        => $ip,
+        guid      => $guid,
+        sessionid => $sessionid,
     });
     if ($client) {
         $client->update({ active => 0 });
-        return $self->to_json({ left => { ip => $ip, agent => $ua } });
+        return $self->to_json({ left => {
+            ip        => $ip,
+            agent     => $ua,
+            guid      => $guid,
+            sessionid => $sessionid,
+        } });
     }
     else {
         return $self->to_json({ error => { slug => 'unknown client' } });

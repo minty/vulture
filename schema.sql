@@ -3,6 +3,8 @@ CREATE TABLE client (
     id        INTEGER PRIMARY KEY AUTOINCREMENT,
     agent     TEXT NOT NULL,
     ip        TEXT NOT NULL,
+    guid      TEXT NOT NULL,
+    sessionid TEXT NOT NULL,
     joined_at INTEGER NOT NULL,
     active    CHAR(1) NOT NULL default 0
 );

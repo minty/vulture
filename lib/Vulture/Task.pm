@@ -37,9 +37,11 @@ sub get {
     my ($ua, $ip) = $self->ua_ip();
     my $rs = $self->schema->resultset('Client');
     my $client = $rs->find({
-        agent  => $ua,
-        ip     => $ip,
-        active => 1,
+        agent     => $ua,
+        ip        => $ip,
+        guid      => $self->param('guid'),
+        sessionid => $self->param('sessionid'),
+        active    => 1,
     });
     return $self->to_json({ error => { slug => 'unknown (inactive) client' } })
         if !$client;
@@ -127,9 +129,11 @@ sub done {
     my ($ua, $ip) = $self->ua_ip();
     my $rs = $self->schema->resultset('Client');
     my $client = $rs->find({
-        agent  => $ua,
-        ip     => $ip,
-        active => 1,
+        agent     => $ua,
+        ip        => $ip,
+        guid      => $self->param('guid'),
+        sessionid => $self->param('sessionid'),
+        active    => 1,
     });
     return $self->to_json({ error => { slug => 'unknown (inactive) client' } })
         if !$client;

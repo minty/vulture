@@ -11,6 +11,17 @@
 <script type="text/javascript">
   $(function() {
 
+    function GUID () {
+        var S4 = function () {
+            return Math.floor(
+                Math.random() * 0x10000 /* 65536 */
+            ).toString(16);
+        };
+        return (S4() + S4() + '-' + S4() + S4() + '-' + S4() + S4());
+    }
+    if (!localStorage.guid) localStorage.guid = GUID();
+    var sessionid = GUID();
+
     var working = false;
     var timer;
 
@@ -20,11 +31,11 @@
             return;
         }
         var start = (new Date).getTime();
-        get_work();
-    }
-
-    function get_work() {
         $.ajax('/api/task/get', {
+            'data': {
+                'guid':      localStorage.guid,
+                'sessionid': sessionid,
+            },
             'success': function(data) {
                 if (data.run) {
                     var script = $('<script class=autoscript type="text/javascript"><' + '/script>');
@@ -66,7 +77,9 @@
             'data'   : {
                 'task_id'      : task_id,
                 'clienttask_id': clienttask_id,
-                'result'       : result
+                'result'       : result,
+                'guid'         : localStorage.guid,
+                'sessionid'    : sessionid
             },
             'success': function(data) {
                 $('.autoscript').remove();
@@ -87,6 +100,10 @@
 
     $('#join').on('click', function(e) {
         $.ajax('/api/client/join/', {
+            'data': {
+                'guid':      localStorage.guid,
+                'sessionid': sessionid,
+            },
             'success': function(data) {
                 alert(typeof data.joined != 'undefined' ? 'joined' : 'failed');
             }
@@ -95,6 +112,10 @@
 
     $('#leave').on('click', function(e) {
         $.ajax('/api/client/leave/', {
+            'data': {
+                'guid':      localStorage.guid,
+                'sessionid': sessionid,
+            },
             'success': function(data) {
                 alert(typeof data.left != 'undefined' ? 'left' : 'failed');
             }
