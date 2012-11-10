@@ -111,6 +111,8 @@ sub startup {
         ->to(controller => 'client', action => 'list');
     $r->get('/api/client/list')
         ->to(controller => 'client', action => 'api_list');
+    $r->get('/api/client/state')
+        ->to(controller => 'client', action => 'state');
     $r->get('/api/client/join')
         ->to(controller => 'client', action => 'join');
     $r->get('/api/client/leave')

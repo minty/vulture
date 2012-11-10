@@ -2,14 +2,22 @@
 
 <input id=join  type=button value=join>
 <input id=leave type=button value=leave>
-<input id=work  type=button value=work>
-<input id=stop  type=button value=stop>
+<input id=state type=button value=state>
+<input id=work  type=button value=work disabled=disabled>
+<input id=stop  type=button value=stop disabled=disabled>
 <p>current working state: <span id=msg></span></p>
 
 <div id=log></div>
 
 <script type="text/javascript">
   $(function() {
+
+    function l(msg) {
+        var dt = new Date;
+        $('#log').prepend(
+            $('<p></p>').text(dt + ' : ' + msg)
+        );
+    }
 
     function GUID () {
         var S4 = function () {
@@ -91,12 +99,21 @@
         if (working) return;
         working = true;
         $('#msg').text(working);
+        l('starting work');
+        $('#stop').attr('disabled', false);
+        $('#work').attr('disabled', 'disabled');
         do_work();
     });
     $('#stop').on('click', function(e) {
+        stop_working();
+    });
+    function stop_working() {
         working = false;
         $('#msg').text(working);
-    });
+        l('stopping work');
+        $('#work').attr('disabled', false);
+        $('#stop').attr('disabled', 'disabled');
+    }
 
     $('#join').on('click', function(e) {
         $.ajax('/api/client/join/', {
@@ -105,22 +122,56 @@
                 'sessionid': sessionid,
             },
             'success': function(data) {
-                alert(typeof data.joined != 'undefined' ? 'joined' : 'failed');
+                l(typeof data.joined != 'undefined' ? 'joined' : 'failed');
+                update_state();
             }
         });
     });
 
     $('#leave').on('click', function(e) {
+        if (working) stop_working();
         $.ajax('/api/client/leave/', {
             'data': {
                 'guid':      localStorage.guid,
                 'sessionid': sessionid,
             },
             'success': function(data) {
-                alert(typeof data.left != 'undefined' ? 'left' : 'failed');
+                l(typeof data.left != 'undefined' ? 'left' : 'failed');
+                update_state();
             }
         });
     });
+
+    $('#state').on('click', function(e) {
+        get_state(function(data) {
+            var state = data.active ? 'joined' : 'left';
+            l('state is ' + state);
+        });
+    });
+
+    function get_state(on_success) {
+        $.ajax('/api/client/state/', {
+            'data': {
+                'guid':      localStorage.guid,
+                'sessionid': sessionid,
+            },
+            'success': function(data) { on_success(data) }
+        });
+    }
+
+    function update_state() {
+        get_state(function(data) {
+            if (data.active) {
+                $('#join, #stop').attr('disabled', 'disabled');
+                $('#leave, #work').attr('disabled', false);
+            }
+            else {
+                $('#join').attr('disabled', false);
+                $('#leave, #work, #stop').attr('disabled', 'disabled');
+            }
+        });
+    }
+    update_state();
 
   });
 </script>
