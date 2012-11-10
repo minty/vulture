@@ -1,8 +1,6 @@
 package Vulture;
 
 # XXX
-# When creating the client tasks, also create a timer event that will auto
-#   terminate any client_tasks that have yet to get a response
 # Create an application level recurring timer to disconnect unresponsive clients
 # Adjust api/run/:id to only create one clienttask per unique ip^ua pair
 # Proxy fetch api

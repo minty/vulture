@@ -192,7 +192,24 @@ sub run {
                 created_at => time,
                 state      => 'pending',
             });
+
         }
+        # Create a timer event to forcefully mark this client task as 'orphaned'
+        my $task_timeout = 30;
+        Mojo::IOLoop->timer($task_timeout => sub {
+            my $clienttask = $self->schema->resultset('ClientTask')->search({
+                task_id     => $task->id,
+                state       => { '!=' => 'complete' },
+            });
+            $clienttask->update({
+                state       => 'orphaned',
+                finished_at => time,
+            });
+            $_->task->update({
+                state       => 'complete',
+                finished_at => time,
+            }) for $clienttask->all;
+        })
     });
 
     return $self->to_json({ run => $data });
