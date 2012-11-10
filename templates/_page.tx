@@ -4,6 +4,15 @@
       body {
         font-family: sans-serif;
       }
+      #log {
+        height: 20em;
+        overflow: auto;
+      }
+      #log p               { color: #ccc; font-size: 80% }
+      #log p:nth-child(1)  { color: #000 }
+      #log p:nth-child(2)  { color: #333 }
+      #log p:nth-child(3)  { color: #666 }
+      #log p:nth-child(4)  { color: #999 }
     </style>
     <script type="text/javascript" src="/jquery.js"></script>
   </head>
