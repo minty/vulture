@@ -1,12 +1,27 @@
 package Vulture;
 
+# XXX
+# Use configs to avoid hardwired paths
+# Convert /get/task to be blocking
+# Have the client generate a uid, and use/log that in the db etc.
+#  - this will mean we could have multiple clients on the same ip, with the same useragent (aka, multiple tabs)
+# Adjust api/run/:id to only create one clienttask per unique ip^ua pair
+# Proxy fetch api
+# simple key-value store api
+# stats pages
+
 use Mojo::Base 'Mojolicious';
 use Text::Xslate::Bridge::TT2;
 use JavaScript::Value::Escape;
 use JSON::XS;
 use Vulture::Schema;
 
-# morbo -l "http://192.168.58.100:8899" script/vulture
+# setup with
+#   sqlite3 vulture.sqlite < ./schema.sql
+# run with
+#   morbo -l "http://192.168.58.100:8899" script/vulture
+
+# https://github.com/oyvindkinsey/easyXDM#readme
 
 my $sql_db = '/home/murray/mojo/vulture/vulture.sqlite';
 
