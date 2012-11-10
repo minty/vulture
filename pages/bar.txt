@@ -5,6 +5,7 @@
 <input id=state type=button value=state>
 <input id=work  type=button value=work disabled=disabled>
 <input id=stop  type=button value=stop disabled=disabled>
+<input id=clear type=button value="clear log">
 <p>current working state: <span id=msg></span></p>
 
 <div id=log></div>
@@ -147,6 +148,10 @@
             var state = data.active ? 'joined' : 'left';
             l('state is ' + state);
         });
+    });
+
+    $('#clear').on('click', function(e) {
+        $('#log').html('');
     });
 
     function get_state(on_success) {
