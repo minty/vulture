@@ -66,7 +66,7 @@ sub startup {
     $self->helper(to_json => sub {
         my ($self, $ref) = @_;
         $self->res->headers->header('Content-type' => 'application/json; charset=utf-8');
-        return $self->render(text => $self->json->encode( $ref ));
+        return $self->render(data => $self->json->encode( $ref ));
     });
 
     $self->helper(to_api_list => sub {
