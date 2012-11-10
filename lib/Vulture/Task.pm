@@ -25,16 +25,24 @@ sub get {
     my ($ua, $ip) = $self->ua_ip();
     my $rs = $self->schema->resultset('Client');
     my $client = $rs->find({
-        agent => $ua,
-        ip    => $ip,
+        agent  => $ua,
+        ip     => $ip,
+        active => 1,
     });
-    return $self->to_json({ error => { slug => 'unknown client' } })
+    return $self->to_json({ error => { slug => 'unknown (inactive) client' } })
         if !$client;
 
-    # XXX
-    # Check there are no running tasks for this client
-    # If so, refuse to issue more work until that task is done.
-    # A well behaved client *should* never request more work, but it might.
+    # Don't issue new tasks if there are already ones running.
+    my $existing = $self->schema->resultset('ClientTask')->search({
+        client_id => $client->id,
+        state     => 'running',
+    });
+    return $self->to_json({ running => [ map { {
+        id        => $_->id,
+        task_id   => $_->task_id,
+        client_id => $_->client_id,
+    } } $existing->all ] })
+        if $existing->count;
 
     my $clienttask = $self->schema->resultset('ClientTask')->search({
         client_id => $client->id,
@@ -57,25 +65,61 @@ sub get {
     return $self->render_not_found
         if !-e $file->stringify;
 
-    return $self->to_json({ run => { task => {
-        id => $task->id,
-        test => scalar $file->slurp,
-    } } });
+    my $data = {
+        state      => 'running',
+        started_at => time,
+    };
+    $task->update($data)
+        if $task->state ne 'running';
+    $clienttask->update($data);
 
-    # build test page
-    # have it join the api
-    # have it fetch a task
-    # have it execute the task
+    return $self->to_json({ run => { task => {
+        id            => $task->id,
+        clienttask_id => $clienttask->id,
+        test          => scalar $file->slurp,
+    } } });
 }
 
 #get '/api/task/done' => sub {
 sub done {
     my ($self) = @_;
 
+    my $clienttask_id = $self->param('clienttask_id')
+        or return $self->to_json({ error => { slug => 'missing clienttask id' } });
+    my $clienttask = $self->schema->resultset('ClientTask')->find($clienttask_id)
+        or return $self->to_json({ error => { slug => "cannot find clienttask $clienttask_id" } });
+
     my ($ua, $ip) = $self->ua_ip();
-    # Expect a task id
-    # and a result string
     my $rs = $self->schema->resultset('Client');
+    my $client = $rs->find({
+        agent  => $ua,
+        ip     => $ip,
+        active => 1,
+    });
+    return $self->to_json({ error => { slug => 'unknown (inactive) client' } })
+        if !$client;
+
+    $clienttask->update({
+        state       => 'complete',
+        finished_at => time,
+        result      => $self->param('result') || '' }
+    );
+
+    # If all clienttasks for the current task are now 'complete'
+    # then update $task->state == complete
+    my $all_clienttasks = $self->schema->resultset('ClientTask')->search({
+        task_id => $clienttask->task_id
+    });
+    my $total = $all_clienttasks->count;
+    my $complete = $all_clienttasks->search({ state => 'complete' })->count;
+    if ($total == $complete) {
+        $clienttask->task->update({
+            state => 'complete',
+            finished_at => time,
+        });
+    }
+
+    return $self->to_json({ thankyou => { slug => "clienttask id $clienttask_id marked as complete" } });
 };
 
 # get '/api/run/:id' => sub {

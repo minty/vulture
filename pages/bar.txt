@@ -3,36 +3,87 @@
 <input id=join  type=button value=join>
 <input id=leave type=button value=leave>
 <input id=work  type=button value=work>
-
-<ul>
-  <li>tell server we're done</li>
-  <li>alert</li>
-  <li>repeat</li>
-</ul>
+<input id=stop  type=button value=stop>
+<p>current working state: <span id=msg></span></p>
 
 <script type="text/javascript">
   $(function() {
 
-    $('#work').on('click', function(e) {
+    var working = false;
+    var timer;
+
+    function do_work() {
+        if (!working) {
+            clearTimeout(timer);
+            return;
+        }
+        var start = (new Date).getTime();
+        get_work();
+        timer = setTimeout(do_work, 1000);
+    }
+
+    function get_work() {
         $.ajax('/api/task/get', {
             'success': function(data) {
                 $('.autoscript').remove();
-                var script = $('<script class=autoscript type="text/javascript"><' + '/script>');
-                script.text( data.run.task.test );
-                $('body').append(script);
+                if (data.run) {
+                    var script = $('<script class=autoscript type="text/javascript"><' + '/script>');
+                    script.text( data.run.task.test );
+                    var msg = '';
+                    try {
+                        $('body').append(script);
+                        msg = 'hardwired result text';
+                    } catch(e) {
+                        msg = 'FAILED';
+                    }
+                    send_result(
+                        data.run.task.id,
+                        data.run.task.clienttask_id,
+                        msg
+                    );
+                }
+                else if (data.error) {
+                    console.log(data.error.slug);
+                }
+                else if (data.retry == 1) {
+                    // do nothing, just return & we'll poll for more work
+                }
+                else {
+                    console.log('Unexpected response to api/task/get');
+                    console.log(data);
+                }
             }
         });
+    }
+
+    function send_result(task_id, clienttask_id, result) {
+        $.ajax('/api/task/done', {
+            'data'   : {
+                'task_id'      : task_id,
+                'clienttask_id': clienttask_id,
+                'result'       : result
+            },
+            'success': function(data) {
+                $('.autoscript').remove();
+            }
+        });
+    }
+
+    $('#work').on('click', function(e) {
+        if (working) return;
+        working = true;
+        $('#msg').text(working);
+        do_work();
+    });
+    $('#stop').on('click', function(e) {
+        working = false;
+        $('#msg').text(working);
     });
 
     $('#join').on('click', function(e) {
         $.ajax('/api/client/join/', {
             'success': function(data) {
-                if (typeof data.joined != 'undefined') {
-                    alert('joined');
-                }
-                else {
-                    alert('failed');
-                }
+                alert(typeof data.joined != 'undefined' ? 'joined' : 'failed');
             }
         });
     });
@@ -40,14 +91,10 @@
     $('#leave').on('click', function(e) {
         $.ajax('/api/client/leave/', {
             'success': function(data) {
-                if (typeof data.left != 'undefined') {
-                    alert('left');
-                }
-                else {
-                    alert('failed to leave');
-                }
+                alert(typeof data.left != 'undefined' ? 'left' : 'failed');
             }
         });
     });
+
   });
 </script>
