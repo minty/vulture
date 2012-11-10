@@ -43,20 +43,24 @@ sub get {
         sessionid => $self->param('sessionid'),
         active    => 1,
     });
-    return $self->to_json({ error => { slug => 'unknown (inactive) client' } })
-        if !$client;
+    return $self->to_json(
+        { error => { slug => 'unknown (inactive) client' } },
+        { delay => 5 },
+    ) if !$client;
 
     # Don't issue new tasks if there are already ones running for this client
     my $existing = $self->schema->resultset('ClientTask')->search({
         client_id => $client->id,
         state     => 'running',
     });
-    return $self->to_json({ running => [ map { {
-        id        => $_->id,
-        task_id   => $_->task_id,
-        client_id => $_->client_id,
-    } } $existing->all ] })
-        if $existing->count;
+    return $self->to_json(
+        { running => [ map { {
+            id        => $_->id,
+            task_id   => $_->task_id,
+            client_id => $_->client_id,
+        } } $existing->all ] },
+        { delay => 3 }
+    ) if $existing->count;
 
     # Wants to be WebSockets, but IE < 10 doesn't support them :(
     # Poll the DB every second to see if there is work.
