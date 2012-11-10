@@ -19,13 +19,11 @@
         }
         var start = (new Date).getTime();
         get_work();
-        timer = setTimeout(do_work, 1000);
     }
 
     function get_work() {
         $.ajax('/api/task/get', {
             'success': function(data) {
-                $('.autoscript').remove();
                 if (data.run) {
                     var script = $('<script class=autoscript type="text/javascript"><' + '/script>');
                     script.text( data.run.task.test );
@@ -33,6 +31,7 @@
                     try {
                         $('body').append(script);
                         msg = 'hardwired result text';
+                        $('.autoscript').remove();
                     } catch(e) {
                         msg = 'FAILED';
                     }
@@ -52,6 +51,10 @@
                     console.log('Unexpected response to api/task/get');
                     console.log(data);
                 }
+                do_work();
+            },
+            'error': function(jqXHR, textStatus) {
+                timer = setTimeout(do_work, 60000);
             }
         });
     }

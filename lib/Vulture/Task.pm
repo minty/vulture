@@ -5,6 +5,7 @@ use Mojo::Base 'Mojolicious::Controller';
 use common::sense;
 use Path::Class;
 use File::Slurp qw<slurp>;
+use Mojo::IOLoop;
 
 sub api_list {
     my ($self) = @_;
@@ -43,7 +44,7 @@ sub get {
     return $self->to_json({ error => { slug => 'unknown (inactive) client' } })
         if !$client;
 
-    # Don't issue new tasks if there are already ones running.
+    # Don't issue new tasks if there are already ones running for this client
     my $existing = $self->schema->resultset('ClientTask')->search({
         client_id => $client->id,
         state     => 'running',
@@ -55,23 +56,47 @@ sub get {
     } } $existing->all ] })
         if $existing->count;
 
-    my $clienttask = $self->schema->resultset('ClientTask')->search({
-        client_id => $client->id,
-        state     => 'pending',
-    }, {
-        order_by => { -asc => 'created_at' },
-        rows     => 1,
-    })->single;
+    # Wants to be WebSockets, but IE < 10 doesn't support them :(
+    # Poll the DB every second to see if there is work.
+    # As soon as we find work, or after 60 seconds, return.
+    # The client is then expected to re-connect.
+    # Mojolicious::Guides::Cookbook#REALTIME_WEB
+    my $clienttask;
+    my $id;
+    my $start = time;
+    my $poll  = $self->config->{long_poll} || 60;
+    my $freq  = $self->config->{poll_freq} || 5;
+    my $clear = sub { Mojo::IOLoop->remove($id) };
 
-    # Mojolicious::Guides::Cookbook
-    # http://mojolicio.us/perldoc/Mojolicious/Guides/Cookbook#REALTIME_WEB
+    Mojo::IOLoop->stream($self->tx->connection)->timeout($poll * 2);
+
+    $id = Mojo::IOLoop->recurring($freq => sub {
+
+        my $delta = time - $start;
+        warn "$delta : polling db for work";
+        $clienttask = $self->schema->resultset('ClientTask')->search({
+            client_id => $client->id,
+            state     => 'pending',
+        }, {
+            order_by => { -asc => 'created_at' },
+            rows     => 1,
+        })->single;
+        if ($clienttask || time - $start > $poll) {
+            $self->on_timer_finish($clienttask);
+            $clear->();
+        }
+    });
+}
+
+sub on_timer_finish {
+    my ($self, $clienttask) = @_;
+
     return $self->to_json({ retry => 1 })
         if !$clienttask;
-
     my $task = $self->schema->resultset('Task')->find( $clienttask->task_id )
         or return $self->to_json({ retry => 1 });
-
     my $file = $self->filepath('/tests/' . $task->test_id);
+
     return $self->render_not_found
         if !-e $file->stringify;
 
