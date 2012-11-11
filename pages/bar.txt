@@ -109,10 +109,13 @@
         stop_working();
     });
     function stop_working() {
-        working = false;
-        $('#msg').text(working);
-        l('stopping work');
-        $('#work').attr('disabled', false);
+        if (working) {
+            working = false;
+            $('#msg').text(working);
+            l('stopping work');
+        }
+        var work = $('#join').attr('disabled') == 'disabled' ? false : 'disabled';
+        $('#work').attr('disabled', work);
         $('#stop').attr('disabled', 'disabled');
     }
 
@@ -130,7 +133,7 @@
     });
 
     $('#leave').on('click', function(e) {
-        if (working) stop_working();
+        stop_working();
         $.ajax('/api/client/leave/', {
             'data': {
                 'guid':      localStorage.guid,
@@ -144,10 +147,7 @@
     });
 
     $('#state').on('click', function(e) {
-        get_state(function(data) {
-            var state = data.active ? 'joined' : 'left';
-            l('state is ' + state);
-        });
+        update_state();
     });
 
     $('#clear').on('click', function(e) {
@@ -166,11 +166,22 @@
 
     function update_state() {
         get_state(function(data) {
+            var state = data.active ? 'joined' : 'left';
+            l('state is ' + state);
             if (data.active) {
-                $('#join, #stop').attr('disabled', 'disabled');
-                $('#leave, #work').attr('disabled', false);
+                $('#join').attr('disabled', 'disabled');
+                $('#leave').attr('disabled', false);
+                if (working) {
+                    $('#work').attr('disabled', 'disabled');
+                    $('#stop').attr('disabled', false);
+                }
+                else {
+                    $('#work').attr('disabled', false);
+                    $('#stop').attr('disabled', 'disabled');
+                }
             }
             else {
+                stop_working();
                 $('#join').attr('disabled', false);
                 $('#leave, #work, #stop').attr('disabled', 'disabled');
             }
