@@ -1,7 +1,6 @@
 package Vulture;
 
 # XXX
-# Create an application level recurring timer to disconnect unresponsive clients
 # Adjust api/run/:id to only create one clienttask per unique ip^ua pair
 # Proxy fetch api
 # simple key-value store api
@@ -91,6 +90,19 @@ sub startup {
     });
 
     $self->secret('Took a long time to hatch');
+
+    # Auto disconnect any client not seen for 300 seconds.
+    # (calling /api/get/task updates last_seen)
+    Mojo::IOLoop->recurring(60 => sub {
+        my $clients = $self->schema->resultset('Client')->search({
+            active => 1,
+            last_seen => { '<' => time - 300 }
+        });
+        my $now = DateTime->now;
+        warn "$now Disconnecting '" . $_->agent . "' " . $_->guid . '/' . $_->sessionid
+            for $clients->all;
+        $clients->update({ active => 0 });
+    });
 
     my $r = $self->routes;
     $r->get('/task/list/:state')
