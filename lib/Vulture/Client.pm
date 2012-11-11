@@ -35,7 +35,11 @@ sub join {
         guid      => $guid,
         sessionid => $sessionid,
     });
-    if ($client) { $client->update({ active => 1 }) }
+    if ($client) { $client->update({
+        active    => 1,
+        last_seen => time,
+        joined_at => time,
+    }) }
     else         {
         $client = $rs->create({
             agent     => $ua,
@@ -43,7 +47,6 @@ sub join {
             guid      => $guid,
             sessionid => $sessionid,
             active    => 1,
-            joined_at => time,
         });
     }
     return $self->to_json({ joined => {
