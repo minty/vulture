@@ -13,6 +13,13 @@
       <li>last seen [% client.last_seen %]</li>
       <li>guid/session id [% client.guid %] / [% client.sessionid %]</li>
       <li>
+        [% client.tasks.count %] tasks,
+        [% client.tasks.search({ state => 'pending' }).count %] pending
+        [% client.tasks.search({ state => 'running' }).count %] running
+        [% client.tasks.search({ state => 'orphaned' }).count %] orphaned
+        [% client.tasks.search({ state => 'complete' }).count %] completed
+      </li>
+      <li>
         <a href="/client/about/[% client.id %]">about</a> |
         <span class=eject>disconnect</span>
       </li>
