@@ -150,6 +150,9 @@ sub startup {
     $r->get('/api/client/leave')
         ->to(controller => 'client', action => 'leave');
 
+    $r->get('/agent/list')
+        ->to(controller => 'agent', action => 'list');
+
     $r->get('/page/:page')
         ->to(controller => 'page', action => 'page');
 }
