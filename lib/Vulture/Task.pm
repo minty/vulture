@@ -63,15 +63,19 @@ sub get {
     # Mojolicious::Guides::Cookbook#REALTIME_WEB
     my $clienttask;
     my $id;
-    my $start = time;
-    my $poll  = $self->config->{long_poll} || 60;
-    my $freq  = $self->config->{poll_freq} || 5;
-    my $clear = sub { Mojo::IOLoop->remove($id) };
+    my $start  = time;
+    my $poll   = $self->config->{long_poll} || 60;
+    my $freq   = $self->config->{poll_freq} || 5;
+    my $clear  = sub { Mojo::IOLoop->remove($id) };
+    my $stream = Mojo::IOLoop->stream($self->tx->connection);
+
+    # If the client kills the connect, we want to kill the recurring timer
+    my $abort = 0;
+    $stream->on(close => sub { $abort = 1 });
 
     Mojo::IOLoop->stream($self->tx->connection)->timeout($poll * 2);
 
     $id = Mojo::IOLoop->recurring($freq => sub {
-
         my $delta = time - $start;
         my $uid = join ' / ', $client->guid, $client->sessionid;
         warn "$delta : polling db for work for $uid";
@@ -82,7 +86,17 @@ sub get {
             order_by => { -asc => 'created_at' },
             rows     => 1,
         })->single;
-        if ($clienttask || time - $start > $poll) {
+
+        my $current_client = $self->rsfind(Client => $client->id);
+        my $finish = 0;
+        $finish = 1
+            if !$current_client             # client has gone away
+            || !$current_client->active     # client is no longer active
+            || $abort                       # stream closed (client disconnect)
+            || $clienttask                  # we found work for the client
+            || time - $start > $poll;       # we hit a timeout
+
+        if ($finish) {
             $self->on_timer_finish($clienttask);
             $clear->();
         }

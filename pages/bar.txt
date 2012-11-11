@@ -32,6 +32,7 @@
     var sessionid = GUID();
 
     var working = false;
+    var jqXHR;
     var timer;
 
     function do_work() {
@@ -40,7 +41,7 @@
             return;
         }
         var start = (new Date).getTime();
-        $.ajax('/api/task/get', {
+        jqXHR = $.ajax('/api/task/get', {
             'data': {
                 'guid':      localStorage.guid,
                 'sessionid': sessionid,
@@ -76,6 +77,7 @@
                 do_work();
             },
             'error': function(jqXHR, textStatus) {
+                clearTimeout(timer);
                 timer = setTimeout(do_work, 60000);
             }
         });
@@ -114,6 +116,7 @@
             $('#msg').text(working);
             l('stopping work');
         }
+        if (jqXHR) jqXHR.abort();
         var work = $('#join').attr('disabled') == 'disabled' ? false : 'disabled';
         $('#work').attr('disabled', work);
         $('#stop').attr('disabled', 'disabled');
