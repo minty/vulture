@@ -4,6 +4,13 @@
       body {
         font-family: sans-serif;
       }
+      .task h1 a {
+        text-decoration: none;
+        color: 000;
+      }
+      .task h1 a:hover {
+        text-decoration: underline;
+      }
       #log {
         height: 20em;
         overflow: auto;
