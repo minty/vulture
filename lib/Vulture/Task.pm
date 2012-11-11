@@ -34,20 +34,11 @@ sub list {
 sub get {
     my ($self) = @_;
 
-    my ($ua, $ip) = $self->ua_ip();
-    my ($guid, $sessionid) = map { $self->param($_) } qw<guid sessionid>;
-    my $rs = $self->schema->resultset('Client');
-    my $client = $rs->find({
-        agent     => $ua,
-        ip        => $ip,
-        guid      => $self->param('guid'),
-        sessionid => $self->param('sessionid'),
-        active    => 1,
-    });
-    return $self->to_json(
-        { error => { slug => 'unknown (inactive) client' } },
-        { delay => 5 },
-    ) if !$client;
+    my $client = $self->client
+        or return $self->to_json(
+            { error => { slug => 'Bad client' } },
+            { delay => 5 },
+        );
 
     # Don't issue new tasks if there are already ones running for this client
     my $existing = $self->schema->resultset('ClientTask')->search({
@@ -82,7 +73,8 @@ sub get {
     $id = Mojo::IOLoop->recurring($freq => sub {
 
         my $delta = time - $start;
-        warn "$delta : polling db for work for $guid / $sessionid";
+        my $uid = join ' / ', $client->guid, $client->sessionid;
+        warn "$delta : polling db for work for $uid";
         $clienttask = $self->schema->resultset('ClientTask')->search({
             client_id => $client->id,
             state     => 'pending',
@@ -133,17 +125,10 @@ sub done {
     my $clienttask = $self->schema->resultset('ClientTask')->find($clienttask_id)
         or return $self->to_json({ error => { slug => "cannot find clienttask $clienttask_id" } });
 
-    my ($ua, $ip) = $self->ua_ip();
-    my $rs = $self->schema->resultset('Client');
-    my $client = $rs->find({
-        agent     => $ua,
-        ip        => $ip,
-        guid      => $self->param('guid'),
-        sessionid => $self->param('sessionid'),
-        active    => 1,
-    });
-    return $self->to_json({ error => { slug => 'unknown (inactive) client' } })
-        if !$client;
+    my $client = $self->client
+        or return $self->to_json(
+            { error => { slug => 'Bad client' } },
+         );
 
     $clienttask->update({
         state       => 'complete',

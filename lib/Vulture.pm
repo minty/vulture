@@ -89,16 +89,36 @@ sub startup {
         return ($self->req->headers->user_agent, $self->tx->remote_address);
     });
 
+    $self->helper(client => sub {
+        my ($self) = @_;
+
+        my ($ua, $ip) = $self->ua_ip();
+        my $guid      = $self->param('guid');
+        my $sessionid = $self->param('sessionid');
+        if (!$guid || !$sessionid) {
+            warn "Missing guid/sessionid";
+            return;
+        }
+        my $rs = $self->schema->resultset('Client');
+        return $rs->find({
+            agent     => $ua,
+            ip        => $ip,
+            guid      => $guid,
+            sessionid => $sessionid,
+            active    => 1,
+        });
+    });
+
     $self->secret('Took a long time to hatch');
 
     # Auto disconnect any client not seen for 300 seconds.
     # (calling /api/get/task updates last_seen)
     Mojo::IOLoop->recurring(60 => sub {
+        my $now     = DateTime->now;
         my $clients = $self->schema->resultset('Client')->search({
-            active => 1,
+            active    => 1,
             last_seen => { '<' => time - 300 }
         });
-        my $now = DateTime->now;
         warn "$now Disconnecting '" . $_->agent . "' " . $_->guid . '/' . $_->sessionid
             for $clients->all;
         $clients->update({ active => 0 });

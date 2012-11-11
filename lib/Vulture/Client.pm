@@ -61,19 +61,8 @@ sub join {
 sub state {
     my ($self) = @_;
 
-    my ($ua, $ip) = $self->ua_ip();
-    my $rs = $self->schema->resultset('Client');
-    my $guid      = $self->param('guid');
-    my $sessionid = $self->param('sessionid');
-    return $self->to_json({ error => { slug => 'Missing guid/sessionid' } })
-        if !$guid || !$sessionid;
-    my $client = $rs->find({
-        agent     => $ua,
-        ip        => $ip,
-        guid      => $guid,
-        sessionid => $sessionid,
-        active    => 1,
-    });
+    my $client = $self->client
+        or return $self->to_json({ error => { slug => 'Bad client' } });
     return $self->to_json({ active => $client ? 1 : 0 });
 }
 
@@ -81,25 +70,15 @@ sub state {
 sub leave {
     my ($self) = @_;
 
-    my ($ua, $ip) = $self->ua_ip();
-    my $rs = $self->schema->resultset('Client');
-    my $guid      = $self->param('guid');
-    my $sessionid = $self->param('sessionid');
-    return $self->to_json({ error => { slug => 'Missing guid/sessionid' } })
-        if !$guid || !$sessionid;
-    my $client = $rs->find({
-        agent     => $ua,
-        ip        => $ip,
-        guid      => $guid,
-        sessionid => $sessionid,
-    });
+    my $client = $self->client
+        or return $self->to_json({ error => { slug => 'Bad client' } });
     if ($client) {
         $client->update({ active => 0 });
         return $self->to_json({ left => {
-            ip        => $ip,
-            agent     => $ua,
-            guid      => $guid,
-            sessionid => $sessionid,
+            ip        => $client->ip,
+            agent     => $client->agent,
+            guid      => $client->guid,
+            sessionid => $client->sessionid,
         } });
     }
     else {
