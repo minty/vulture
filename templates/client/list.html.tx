@@ -3,6 +3,7 @@
 <ul class=clientlist>
   [% WHILE (client = clients.next) %]
     <li
+      class=active
       data-id="[% client.id %]"
       data-guid="[% client.guid %]"
       data-sessionid="[% client.sessionid %]"

@@ -18,20 +18,35 @@
         line-height: 1.5em;
         padding: 1em;
       }
-      .clientlist li:hover {
+      .clientlist li.active:hover {
         cursor: pointer;
         text-decoration: underline;
+      }
+      .clientlist li.left {
+        text-decoration: line-through;
+        color: #ccc;
       }
     </style>
     <script type="text/javascript" src="/jquery.js"></script>
     <script type="text/javascript">
       $(function() {
-        $('.clientlist li').on('click', function(e) {
+        $('.clientlist li.active').on('click', function(e) {
         var o = $(this);
         console.log(o.data('id'));
         console.log(o.data('guid'));
         console.log(o.data('sessionid'));
         console.log(o.data('agent'));
+        $.ajax('/api/client/eject/' + o.data('id'), {
+            'success': function(data) {
+                console.log(data);
+                if (typeof data.left != 'undefined') {
+                    o.removeClass('active').addClass('left');
+                }
+            },
+            'error': function(xhr, status) {
+                console.log('error ejecting client ' + o.data('id') + ' ' + status);
+            }
+        });
       });
     });
     </script>

@@ -66,6 +66,18 @@ sub state {
     return $self->to_json({ active => $client ? 1 : 0 });
 }
 
+sub client_hash {
+    my ($self, $client) = @_;
+    return {
+        id        => $client->id,
+        ip        => $client->ip,
+        agent     => $client->agent,
+        guid      => $client->guid,
+        sessionid => $client->sessionid,
+        active    => $client->active,
+    };
+}
+
 #get '/api/client/leave/' => sub {
 sub leave {
     my ($self) = @_;
@@ -74,12 +86,7 @@ sub leave {
         or return $self->to_json({ error => { slug => 'Bad client' } });
     if ($client) {
         $client->update({ active => 0 });
-        return $self->to_json({ left => {
-            ip        => $client->ip,
-            agent     => $client->agent,
-            guid      => $client->guid,
-            sessionid => $client->sessionid,
-        } });
+        return $self->to_json({ left => $self->client_hash($client) });
     }
     else {
         return $self->to_json({ error => { slug => 'unknown client' } });
@@ -88,6 +95,18 @@ sub leave {
     # first see if there is an existing client with the current ip/ua
     # if so, make it in-active and return
     # else return an "unknown" error
+}
+
+# 'leave' is meant for a client to disconnect itself.
+# 'eject' lets one client forcefully disconnect another.
+sub eject {
+    my ($self) = @_;
+    my $client_id = $self->param('client_id')
+        or return $self->to_json({ error => { slug => 'No client id' } });
+    my $client = $self->schema->resultset('Client')->find($client_id)
+        or return $self->to_json({ error => { slug => 'Bad client id' } });
+    $client->update({ active => 0 });
+    return $self->to_json({ left => $self->client_hash($client) });
 }
 
 1;

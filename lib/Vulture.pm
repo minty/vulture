@@ -1,7 +1,6 @@
 package Vulture;
 
 # XXX
-# Adjust api/run/:id to only create one clienttask per unique ip^ua pair
 # Proxy fetch api
 # simple key-value store api
 # stats pages
@@ -145,6 +144,8 @@ sub startup {
         ->to(controller => 'client', action => 'state');
     $r->get('/api/client/join')
         ->to(controller => 'client', action => 'join');
+    $r->get('/api/client/eject/:client_id')
+        ->to(controller => 'client', action => 'eject');
     $r->get('/api/client/leave')
         ->to(controller => 'client', action => 'leave');
 
