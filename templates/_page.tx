@@ -23,22 +23,38 @@
       .clientlist {
         font-size: 85%;
         line-height: 1.5em;
-        padding: 1em;
+        padding: 0;
+        list-style: none;
       }
-      .clientlist li.active:hover {
+      .clientlist > li {
+         border-bottom: 1px dashed #ccc;
+         padding-bottom: 0.75em;
+      }
+      .clientlist > li:last-child {
+        border: none;
+      }
+      .clientlist li a {
+        text-decoration: none;
+        color: #000;
+      }
+      .clientlist ul li a:hover,
+      .clientlist li.active .eject:hover {
         cursor: pointer;
         text-decoration: underline;
       }
       .clientlist li.left {
         text-decoration: line-through;
+      }
+      .clientlist li.left,
+      .clientlist li.left a {
         color: #ccc;
       }
     </style>
     <script type="text/javascript" src="/jquery.js"></script>
     <script type="text/javascript">
       $(function() {
-        $('.clientlist li.active').on('click', function(e) {
-        var o = $(this);
+        $('.clientlist li.active .eject').on('click', function(e) {
+        var o = $(this).parents('li.active');
         console.log(o.data('id'));
         console.log(o.data('guid'));
         console.log(o.data('sessionid'));

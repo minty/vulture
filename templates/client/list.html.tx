@@ -8,7 +8,15 @@
       data-guid="[% client.guid %]"
       data-sessionid="[% client.sessionid %]"
       data-agent="[% client.agent %]"
-    >[% client.guid %] / [% client.sessionid %] : [% client.agent %]</li>
+    ><ul>
+      <li><b>[% client.ip %] ^ [% client.agent %]</b></li>
+      <li>last seen [% client.last_seen %]</li>
+      <li>guid/session id [% client.guid %] / [% client.sessionid %]</li>
+      <li>
+        <a href="/client/about/[% client.id %]">about</a> |
+        <span class=eject>disconnect</span>
+      </li>
+    </ul></li>
   [% END %]
 </ul>
 [% END %]
