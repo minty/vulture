@@ -100,7 +100,7 @@ sub startup {
             warn "Missing guid/sessionid";
             return;
         }
-        return $self->rsfind({
+        return $self->rsfind(Client => {
             agent     => $ua,
             ip        => $ip,
             guid      => $guid,
