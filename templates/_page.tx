@@ -33,10 +33,12 @@
       .clientlist > li:last-child {
         border: none;
       }
+      .agentlist li a,
       .clientlist li a {
         text-decoration: none;
         color: #000;
       }
+      .agentlist li a:hover,
       .clientlist ul li a:hover,
       .clientlist li.active .eject:hover {
         cursor: pointer;
