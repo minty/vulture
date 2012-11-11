@@ -4,7 +4,9 @@
 <ul class=iplist>
   [% WHILE (ip = ips.next) %]
     <li>
+      <a href="/agent/ip/show/?agent=[% agent | uri %]&ip=[% ip.ip | uri %]">
       [% ip.get_column('count') %] clients from <b>[% ip.ip %]</b>
+      </a>
     </li>
   [% END %]
 </ul>

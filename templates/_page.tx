@@ -33,11 +33,13 @@
       .clientlist > li:last-child {
         border: none;
       }
+      .iplist li a,
       .agentlist li a,
       .clientlist li a {
         text-decoration: none;
         color: #000;
       }
+      .iplist li a:hover,
       .agentlist li a:hover,
       .clientlist ul li a:hover,
       .clientlist li.active .eject:hover {

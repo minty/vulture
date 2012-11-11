@@ -41,4 +41,30 @@ sub show {
     return $self->render(template => 'agent/show');
 }
 
+#get '/agent/ip/show/?agent=...&ip=...' => sub {
+sub showip {
+    my ($self) = @_;
+
+    my $agent = $self->param('agent')
+        or return $self->to_json(
+            { error => { slug => 'Missing agent param in querystring' } },
+        );
+    my $ip = $self->param('ip')
+        or return $self->to_json(
+            { error => { slug => 'Missing ip param in querystring' } },
+        );
+
+    $self->stash(
+        agent   => $agent,
+        ip      => $ip,
+        clients => $self->rs('Client')->search_rs({
+            agent => $agent,
+            ip    => $ip,
+        }, {
+            order_by => { -desc => 'last_seen' },
+        }),
+    );
+    return $self->render(template => 'client/list');
+}
+
 1;

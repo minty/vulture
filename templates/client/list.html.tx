@@ -9,7 +9,7 @@
       data-sessionid="[% client.sessionid %]"
       data-agent="[% client.agent %]"
     ><ul>
-      <li><b>[% client.ip %] ^ [% client.agent %]</b></li>
+      <li><b>[% client.ip %] ^ <a href="/agent/show/?agent=[% client.agent | uri %]">[% client.agent %]</a></b></li>
       <li>last seen [% client.last_seen %]</li>
       <li>guid/session id [% client.guid %] / [% client.sessionid %]</li>
       <li>
@@ -20,8 +20,8 @@
         [% client.tasks.search({ state => 'complete' }).count %] completed
       </li>
       <li>
-        <a href="/client/about/[% client.id %]">about</a> |
-        <span class=eject>disconnect</span>
+        <a href="/client/about/[% client.id %]">about</a>[%
+            IF client.active %] | <span class=eject>disconnect</span>[% END %]
       </li>
     </ul></li>
   [% END %]
