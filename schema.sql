@@ -6,6 +6,7 @@ CREATE TABLE client (
     guid      TEXT NOT NULL,
     sessionid TEXT NOT NULL,
     joined_at INTEGER NOT NULL,
+    last_seen INTEGER NOT NULL,
     active    CHAR(1) NOT NULL default 0
 );
 

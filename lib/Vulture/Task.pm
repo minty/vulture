@@ -63,6 +63,8 @@ sub get {
         { delay => 3 }
     ) if $existing->count;
 
+    $client->update({ last_seen => time });
+
     # Wants to be WebSockets, but IE < 10 doesn't support them :(
     # Poll the DB every second to see if there is work.
     # As soon as we find work, or after 60 seconds, return.
