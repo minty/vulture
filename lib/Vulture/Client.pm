@@ -28,7 +28,7 @@ sub join {
     my $sessionid = $self->param('sessionid');
     return $self->to_json({ error => { slug => 'Missing guid/sessionid' } })
         if !$guid || !$sessionid;
-    my $rs = $self->schema->resultset('Client');
+    my $rs = $self->rs('Client');
     my $client = $rs->find({
         agent     => $ua,
         ip        => $ip,
@@ -103,7 +103,7 @@ sub eject {
     my ($self) = @_;
     my $client_id = $self->param('client_id')
         or return $self->to_json({ error => { slug => 'No client id' } });
-    my $client = $self->schema->resultset('Client')->find($client_id)
+    my $client = $self->rsfind(Client => $client_id)
         or return $self->to_json({ error => { slug => 'Bad client id' } });
     $client->update({ active => 0 });
     return $self->to_json({ left => $self->client_hash($client) });

@@ -44,6 +44,8 @@ sub startup {
         state $db = Vulture::Schema->connect("dbi:SQLite:dbname=$sql_db");
         return $db;
     });
+    $self->helper(rs     => sub { shift->schema->rs(@_) });
+    $self->helper(rsfind => sub { shift->schema->rsfind(@_) });
 
     $self->helper(json => sub {
         state $json = JSON::XS->new->utf8->pretty;
@@ -75,12 +77,12 @@ sub startup {
 
     $self->helper(active_tasks => sub {
         my ($self, $state) = @_;
-        return $self->schema->resultset('Task')->search_rs({ state => $state });
+        return $self->rs('Task')->search_rs({ state => $state });
     });
 
     $self->helper(active_clients => sub {
         my ($self, $state) = @_;
-        return $self->schema->resultset('Client')->search_rs({ active => 1 });
+        return $self->rs('Client')->search_rs({ active => 1 });
     });
 
     $self->helper(ua_ip => sub {
@@ -98,8 +100,7 @@ sub startup {
             warn "Missing guid/sessionid";
             return;
         }
-        my $rs = $self->schema->resultset('Client');
-        return $rs->find({
+        return $self->rsfind({
             agent     => $ua,
             ip        => $ip,
             guid      => $guid,
@@ -114,7 +115,7 @@ sub startup {
     # (calling /api/get/task updates last_seen)
     Mojo::IOLoop->recurring(60 => sub {
         my $now     = DateTime->now;
-        my $clients = $self->schema->resultset('Client')->search({
+        my $clients = $self->rs('Client')->search({
             active    => 1,
             last_seen => { '<' => time - 300 }
         });
