@@ -18,7 +18,7 @@ sub list {
 
     my $state = $self->param('state');
     if ($state eq 'all') {
-        $self->stash(states => $self->schema->resultset('Task')->search_rs({}, {
+        $self->stash(states => $self->rs('Task')->search_rs({}, {
             select   => ['state', { count => 'state' }],
             as       => [qw<state number>],
             group_by => 'state'
@@ -34,23 +34,14 @@ sub list {
 sub get {
     my ($self) = @_;
 
-    my ($ua, $ip) = $self->ua_ip();
-    my ($guid, $sessionid) = map { $self->param($_) } qw<guid sessionid>;
-    my $rs = $self->schema->resultset('Client');
-    my $client = $rs->find({
-        agent     => $ua,
-        ip        => $ip,
-        guid      => $self->param('guid'),
-        sessionid => $self->param('sessionid'),
-        active    => 1,
-    });
-    return $self->to_json(
-        { error => { slug => 'unknown (inactive) client' } },
-        { delay => 5 },
-    ) if !$client;
+    my $client = $self->client
+        or return $self->to_json(
+            { error => { slug => 'Bad client' } },
+            { delay => 5 },
+        );
 
     # Don't issue new tasks if there are already ones running for this client
-    my $existing = $self->schema->resultset('ClientTask')->search({
+    my $existing = $self->rs('ClientTask')->search({
         client_id => $client->id,
         state     => 'running',
     });
@@ -72,25 +63,40 @@ sub get {
     # Mojolicious::Guides::Cookbook#REALTIME_WEB
     my $clienttask;
     my $id;
-    my $start = time;
-    my $poll  = $self->config->{long_poll} || 60;
-    my $freq  = $self->config->{poll_freq} || 5;
-    my $clear = sub { Mojo::IOLoop->remove($id) };
+    my $start  = time;
+    my $poll   = $self->config->{long_poll} || 60;
+    my $freq   = $self->config->{poll_freq} || 5;
+    my $clear  = sub { Mojo::IOLoop->remove($id) };
+    my $stream = Mojo::IOLoop->stream($self->tx->connection);
+
+    # If the client kills the connect, we want to kill the recurring timer
+    my $abort = 0;
+    $stream->on(close => sub { $abort = 1 });
 
     Mojo::IOLoop->stream($self->tx->connection)->timeout($poll * 2);
 
     $id = Mojo::IOLoop->recurring($freq => sub {
-
         my $delta = time - $start;
-        warn "$delta : polling db for work for $guid / $sessionid";
-        $clienttask = $self->schema->resultset('ClientTask')->search({
+        my $uid = join ' / ', $client->guid, $client->sessionid;
+        warn "$delta : polling db for work for $uid";
+        $clienttask = $self->rs('ClientTask')->search({
             client_id => $client->id,
             state     => 'pending',
         }, {
             order_by => { -asc => 'created_at' },
             rows     => 1,
         })->single;
-        if ($clienttask || time - $start > $poll) {
+
+        my $current_client = $self->rsfind(Client => $client->id);
+        my $finish = 0;
+        $finish = 1
+            if !$current_client             # client has gone away
+            || !$current_client->active     # client is no longer active
+            || $abort                       # stream closed (client disconnect)
+            || $clienttask                  # we found work for the client
+            || time - $start > $poll;       # we hit a timeout
+
+        if ($finish) {
             $self->on_timer_finish($clienttask);
             $clear->();
         }
@@ -102,7 +108,7 @@ sub on_timer_finish {
 
     return $self->to_json({ retry => 1 })
         if !$clienttask;
-    my $task = $self->schema->resultset('Task')->find( $clienttask->task_id )
+    my $task = $self->rsfind(Task => $clienttask->task_id)
         or return $self->to_json({ retry => 1 });
     my $file = $self->filepath('/tests/' . $task->test_id);
 
@@ -130,20 +136,13 @@ sub done {
 
     my $clienttask_id = $self->param('clienttask_id')
         or return $self->to_json({ error => { slug => 'missing clienttask id' } });
-    my $clienttask = $self->schema->resultset('ClientTask')->find($clienttask_id)
+    my $clienttask = $self->rsfind(ClientTask => $clienttask_id)
         or return $self->to_json({ error => { slug => "cannot find clienttask $clienttask_id" } });
 
-    my ($ua, $ip) = $self->ua_ip();
-    my $rs = $self->schema->resultset('Client');
-    my $client = $rs->find({
-        agent     => $ua,
-        ip        => $ip,
-        guid      => $self->param('guid'),
-        sessionid => $self->param('sessionid'),
-        active    => 1,
-    });
-    return $self->to_json({ error => { slug => 'unknown (inactive) client' } })
-        if !$client;
+    my $client = $self->client
+        or return $self->to_json(
+            { error => { slug => 'Bad client' } },
+         );
 
     $clienttask->update({
         state       => 'complete',
@@ -153,7 +152,7 @@ sub done {
 
     # If all clienttasks for the current task are now 'complete'
     # then update $task->state == complete
-    my $all_clienttasks = $self->schema->resultset('ClientTask')->search({
+    my $all_clienttasks = $self->rs('ClientTask')->search({
         task_id => $clienttask->task_id
     });
     my $total = $all_clienttasks->count;
@@ -182,13 +181,13 @@ sub run {
         state      => 'pending',
     };
     $self->schema->txn_do(sub {
-        my $task = $self->schema->resultset('Task')->create($data);
+        my $task = $self->rs('Task')->create($data);
         $data->{id} = $task->id;
 
         # Now create a client_task for each active client
         my $clients = $self->active_clients();
         for my $client ($clients->all) {
-            $self->schema->resultset('ClientTask')->create({
+            $self->rs('ClientTask')->create({
                 task_id    => $task->id,
                 client_id  => $client->id,
                 created_at => time,
@@ -199,7 +198,7 @@ sub run {
         # Create a timer event to forcefully mark this client task as 'orphaned'
         my $task_timeout = 30;
         Mojo::IOLoop->timer($task_timeout => sub {
-            my $clienttask = $self->schema->resultset('ClientTask')->search({
+            my $clienttask = $self->rs('ClientTask')->search({
                 task_id     => $task->id,
                 state       => { '!=' => 'complete' },
             });

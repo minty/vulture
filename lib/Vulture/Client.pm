@@ -28,14 +28,18 @@ sub join {
     my $sessionid = $self->param('sessionid');
     return $self->to_json({ error => { slug => 'Missing guid/sessionid' } })
         if !$guid || !$sessionid;
-    my $rs = $self->schema->resultset('Client');
+    my $rs = $self->rs('Client');
     my $client = $rs->find({
         agent     => $ua,
         ip        => $ip,
         guid      => $guid,
         sessionid => $sessionid,
     });
-    if ($client) { $client->update({ active => 1 }) }
+    if ($client) { $client->update({
+        active    => 1,
+        last_seen => time,
+        joined_at => time,
+    }) }
     else         {
         $client = $rs->create({
             agent     => $ua,
@@ -43,7 +47,6 @@ sub join {
             guid      => $guid,
             sessionid => $sessionid,
             active    => 1,
-            joined_at => time,
         });
     }
     return $self->to_json({ joined => {
@@ -58,46 +61,32 @@ sub join {
 sub state {
     my ($self) = @_;
 
-    my ($ua, $ip) = $self->ua_ip();
-    my $rs = $self->schema->resultset('Client');
-    my $guid      = $self->param('guid');
-    my $sessionid = $self->param('sessionid');
-    return $self->to_json({ error => { slug => 'Missing guid/sessionid' } })
-        if !$guid || !$sessionid;
-    my $client = $rs->find({
-        agent     => $ua,
-        ip        => $ip,
-        guid      => $guid,
-        sessionid => $sessionid,
-        active    => 1,
-    });
+    my $client = $self->client
+        or return $self->to_json({ error => { slug => 'Bad client' } });
     return $self->to_json({ active => $client ? 1 : 0 });
+}
+
+sub client_hash {
+    my ($self, $client) = @_;
+    return {
+        id        => $client->id,
+        ip        => $client->ip,
+        agent     => $client->agent,
+        guid      => $client->guid,
+        sessionid => $client->sessionid,
+        active    => $client->active,
+    };
 }
 
 #get '/api/client/leave/' => sub {
 sub leave {
     my ($self) = @_;
 
-    my ($ua, $ip) = $self->ua_ip();
-    my $rs = $self->schema->resultset('Client');
-    my $guid      = $self->param('guid');
-    my $sessionid = $self->param('sessionid');
-    return $self->to_json({ error => { slug => 'Missing guid/sessionid' } })
-        if !$guid || !$sessionid;
-    my $client = $rs->find({
-        agent     => $ua,
-        ip        => $ip,
-        guid      => $guid,
-        sessionid => $sessionid,
-    });
+    my $client = $self->client
+        or return $self->to_json({ error => { slug => 'Bad client' } });
     if ($client) {
         $client->update({ active => 0 });
-        return $self->to_json({ left => {
-            ip        => $ip,
-            agent     => $ua,
-            guid      => $guid,
-            sessionid => $sessionid,
-        } });
+        return $self->to_json({ left => $self->client_hash($client) });
     }
     else {
         return $self->to_json({ error => { slug => 'unknown client' } });
@@ -106,6 +95,18 @@ sub leave {
     # first see if there is an existing client with the current ip/ua
     # if so, make it in-active and return
     # else return an "unknown" error
+}
+
+# 'leave' is meant for a client to disconnect itself.
+# 'eject' lets one client forcefully disconnect another.
+sub eject {
+    my ($self) = @_;
+    my $client_id = $self->param('client_id')
+        or return $self->to_json({ error => { slug => 'No client id' } });
+    my $client = $self->rsfind(Client => $client_id)
+        or return $self->to_json({ error => { slug => 'Bad client id' } });
+    $client->update({ active => 0 });
+    return $self->to_json({ left => $self->client_hash($client) });
 }
 
 1;

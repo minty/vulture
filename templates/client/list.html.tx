@@ -3,11 +3,30 @@
 <ul class=clientlist>
   [% WHILE (client = clients.next) %]
     <li
+      class=active
       data-id="[% client.id %]"
       data-guid="[% client.guid %]"
       data-sessionid="[% client.sessionid %]"
       data-agent="[% client.agent %]"
-    >[% client.guid %] / [% client.sessionid %] : [% client.agent %]</li>
+    ><ul>
+      <li>
+        <b><a href="/ip/show/?ip=[% client.ip | uri %]">[% client.ip %]</a> ^
+           <a href="/agent/show/?agent=[% client.agent | uri %]">[% client.agent %]</a></b>
+      </li>
+      <li>last seen [% client.last_seen %]</li>
+      <li>guid/session id [% client.guid %] / [% client.sessionid %]</li>
+      <li>
+        [% client.tasks.count %] tasks,
+        [% client.tasks.search({ state => 'pending' }).count %] pending
+        [% client.tasks.search({ state => 'running' }).count %] running
+        [% client.tasks.search({ state => 'orphaned' }).count %] orphaned
+        [% client.tasks.search({ state => 'complete' }).count %] completed
+      </li>
+      <li>
+        <a href="/client/about/[% client.id %]">about</a>[%
+            IF client.active %] | <span class=eject>disconnect</span>[% END %]
+      </li>
+    </ul></li>
   [% END %]
 </ul>
 [% END %]

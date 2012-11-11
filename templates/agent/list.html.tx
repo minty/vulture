@@ -1,0 +1,12 @@
+[% WRAPPER "_page.tx" WITH body_class = 'index', type = 'index' %]
+<h1>agent list</h1>
+<ul class=agentlist>
+  [% WHILE (agent = agents.next) %]
+    <li>
+      <a href="/agent/show/?agent=[% agent.agent | uri %]">
+      [% agent.get_column('count') %] clients with <b>[% agent.agent %]</b>
+      </a>
+    </li>
+  [% END %]
+</ul>
+[% END %]

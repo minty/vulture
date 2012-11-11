@@ -1,8 +1,6 @@
 package Vulture;
 
 # XXX
-# Create an application level recurring timer to disconnect unresponsive clients
-# Adjust api/run/:id to only create one clienttask per unique ip^ua pair
 # Proxy fetch api
 # simple key-value store api
 # stats pages
@@ -46,6 +44,8 @@ sub startup {
         state $db = Vulture::Schema->connect("dbi:SQLite:dbname=$sql_db");
         return $db;
     });
+    $self->helper(rs     => sub { shift->schema->rs(@_) });
+    $self->helper(rsfind => sub { shift->schema->rsfind(@_) });
 
     $self->helper(json => sub {
         state $json = JSON::XS->new->utf8->pretty;
@@ -77,12 +77,12 @@ sub startup {
 
     $self->helper(active_tasks => sub {
         my ($self, $state) = @_;
-        return $self->schema->resultset('Task')->search_rs({ state => $state });
+        return $self->rs('Task')->search_rs({ state => $state });
     });
 
     $self->helper(active_clients => sub {
         my ($self, $state) = @_;
-        return $self->schema->resultset('Client')->search_rs({ active => 1 });
+        return $self->rs('Client')->search_rs({ active => 1 });
     });
 
     $self->helper(ua_ip => sub {
@@ -90,7 +90,39 @@ sub startup {
         return ($self->req->headers->user_agent, $self->tx->remote_address);
     });
 
+    $self->helper(client => sub {
+        my ($self) = @_;
+
+        my ($ua, $ip) = $self->ua_ip();
+        my $guid      = $self->param('guid');
+        my $sessionid = $self->param('sessionid');
+        if (!$guid || !$sessionid) {
+            warn "Missing guid/sessionid";
+            return;
+        }
+        return $self->rsfind(Client => {
+            agent     => $ua,
+            ip        => $ip,
+            guid      => $guid,
+            sessionid => $sessionid,
+            active    => 1,
+        });
+    });
+
     $self->secret('Took a long time to hatch');
+
+    # Auto disconnect any client not seen for 300 seconds.
+    # (calling /api/get/task updates last_seen)
+    Mojo::IOLoop->recurring(60 => sub {
+        my $now     = DateTime->now;
+        my $clients = $self->rs('Client')->search({
+            active    => 1,
+            last_seen => { '<' => time - 300 }
+        });
+        warn "$now Disconnecting '" . $_->agent . "' " . $_->guid . '/' . $_->sessionid
+            for $clients->all;
+        $clients->update({ active => 0 });
+    });
 
     my $r = $self->routes;
     $r->get('/task/list/:state')
@@ -113,8 +145,22 @@ sub startup {
         ->to(controller => 'client', action => 'state');
     $r->get('/api/client/join')
         ->to(controller => 'client', action => 'join');
+    $r->get('/api/client/eject/:client_id')
+        ->to(controller => 'client', action => 'eject');
     $r->get('/api/client/leave')
         ->to(controller => 'client', action => 'leave');
+
+    $r->get('/agent/list')
+        ->to(controller => 'agent', action => 'list');
+    $r->get('/agent/show')
+        ->to(controller => 'agent', action => 'show');
+    $r->get('/agent/ip/show')
+        ->to(controller => 'agent', action => 'showip');
+
+    $r->get('/ip/list')
+        ->to(controller => 'ip', action => 'list');
+    $r->get('/ip/show')
+        ->to(controller => 'ip', action => 'show');
 
     $r->get('/page/:page')
         ->to(controller => 'page', action => 'page');
