@@ -63,18 +63,21 @@
                         data.run.task.clienttask_id,
                         msg
                     );
+                    do_work();
                 }
                 else if (data.error) {
                     console.log(data.error.slug);
+                    update_state();
                 }
                 else if (data.retry == 1) {
                     // do nothing, just return & we'll poll for more work
+                    do_work();
                 }
                 else {
                     console.log('Unexpected response to api/task/get');
                     console.log(data);
+                    update_state();
                 }
-                do_work();
             },
             'error': function(jqXHR, textStatus) {
                 clearTimeout(timer);
@@ -170,7 +173,7 @@
     function update_state() {
         get_state(function(data) {
             var state = data.active ? 'joined' : 'left';
-            l('state is ' + state);
+            l('state is ' + state + ' for ' + localStorage.guid + ' / ' + sessionid);
             if (data.active) {
                 $('#join').attr('disabled', 'disabled');
                 $('#leave').attr('disabled', false);
