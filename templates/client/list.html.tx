@@ -9,7 +9,10 @@
       data-sessionid="[% client.sessionid %]"
       data-agent="[% client.agent %]"
     ><ul>
-      <li><b>[% client.ip %] ^ <a href="/agent/show/?agent=[% client.agent | uri %]">[% client.agent %]</a></b></li>
+      <li>
+        <b><a href="/ip/show/?ip=[% client.ip | uri %]">[% client.ip %]</a> ^
+           <a href="/agent/show/?agent=[% client.agent | uri %]">[% client.agent %]</a></b>
+      </li>
       <li>last seen [% client.last_seen %]</li>
       <li>guid/session id [% client.guid %] / [% client.sessionid %]</li>
       <li>

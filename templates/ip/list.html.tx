@@ -1,0 +1,12 @@
+[% WRAPPER "_page.tx" WITH body_class = 'index', type = 'index' %]
+<h1>ip list</h1>
+<ul class=iplist>
+  [% WHILE (ip = ips.next) %]
+    <li>
+      <a href="/ip/show/?ip=[% ip.ip | uri %]">
+      [% ip.get_column('count') %] clients from <b>[% ip.ip %]</b>
+      </a>
+    </li>
+  [% END %]
+</ul>
+[% END %]

@@ -157,6 +157,11 @@ sub startup {
     $r->get('/agent/ip/show')
         ->to(controller => 'agent', action => 'showip');
 
+    $r->get('/ip/list')
+        ->to(controller => 'ip', action => 'list');
+    $r->get('/ip/show')
+        ->to(controller => 'ip', action => 'show');
+
     $r->get('/page/:page')
         ->to(controller => 'page', action => 'page');
 }

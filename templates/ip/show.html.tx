@@ -1,0 +1,13 @@
+[% WRAPPER "_page.tx" WITH body_class = 'index', type = 'index' %]
+<h1>ip list</h1>
+<p>For <b>[% ip %]</b></p>
+<ul class=agentlist>
+  [% WHILE (agent = agents.next) %]
+    <li>
+      <a href="/agent/ip/show/?agent=[% agent.agent | uri %]&ip=[% ip | uri %]">
+      [% agent.get_column('count') %] clients using <b>[% agent.agent %]</b>
+      </a>
+    </li>
+  [% END %]
+</ul>
+[% END %]
