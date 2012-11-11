@@ -63,7 +63,6 @@
                         data.run.task.clienttask_id,
                         msg
                     );
-                    do_work();
                 }
                 else if (data.error) {
                     console.log(data.error.slug);
@@ -97,6 +96,7 @@
             },
             'success': function(data) {
                 $('.autoscript').remove();
+                do_work();
             }
         });
     }
