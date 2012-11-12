@@ -82,7 +82,11 @@ sub startup {
 
     $self->helper(active_clients => sub {
         my ($self, $state) = @_;
-        return $self->rs('Client')->search_rs({ active => 1 });
+        return $self->rs('Client')->search_rs({
+            active => 1,
+        }, {
+            order_by => { -desc => 'last_seen' },
+        });
     });
 
     $self->helper(ua_ip => sub {
