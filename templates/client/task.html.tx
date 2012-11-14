@@ -1,0 +1,17 @@
+[% WRAPPER "_page.tx" WITH body_class = 'task', type = 'index' %]
+  <h1><a href="/task/list/all">Task [% task.id %] to run test [% task.test_id %]</a></h1>
+  <ul>
+    <li>Created at [% task.created_at %]</li>
+    [% IF task.started_at %]<li>Started at [% task.started_at %]</li>[% END %]
+    [% IF task.finished_at %]<li>Finished at [% task.finished_at %]</li>[% END %]
+  </ul>
+  <hr>
+  <ul class=clientlist>
+  [% FOR ct IN array( task.client_tasks ) %]
+    <li><ul>
+      <li>[% ct.state %] : [% ct.result %]</li>
+      <li>[% ct.client.ip %] using [% ct.client.agent %]</li>
+    </ul></li>
+  [% END %]
+  </ul>
+[% END %]

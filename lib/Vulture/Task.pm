@@ -21,7 +21,8 @@ sub list {
         $self->stash(states => $self->rs('Task')->search_rs({}, {
             select   => ['state', { count => 'state' }],
             as       => [qw<state number>],
-            group_by => 'state'
+            group_by => 'state',
+            order_by => { -desc => \'COUNT(*)' },
         }));
     }
     else {

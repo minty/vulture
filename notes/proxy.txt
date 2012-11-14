@@ -1,0 +1,138 @@
+The idea of using a proxy is that we want:
+
+    * support for many/all browsers, including IE6 and up & mobile safari /
+      android browsers etc.
+    * no plugins required.  (a) because it means you need the plugin before we
+      can test the browser and (b) not all browsers, like mobile safari, allow
+      plugins.
+    * minimal / easy setup.  Aka, requiring an Apache proxy-pass, or fudging
+      the DNS is ok for our own internal use, but a hugely limiting factor for
+      wider deployment.
+
+Thus the goal is:
+
+    $ cpanm Mojolicious
+    $ git clone git@github.com:minty/vulture.git
+    $ cd vulture.git
+    $ morbo .... ./script/vulture
+
+followed by:
+
+    * Set the proxy in your browser
+    * Go to http://some.domain/TESTING/
+
+and we're done.
+
+===
+
+Our main issue is the use of the frameset in order to load in the page we want
+to test.  We need to be able to communicate to/from that frameset.
+
+There are a variety of approaches with varying pro/cons:
+
+1. No frameset.  Use the proxy to inject a <script> tag that loads up the
+   testing stuff.
+
+    - We'd like to minimise the changes we're making to the page we're testing.
+    - It's hard to add the testing related UI without also seriously effecting
+      the basic DOM structure of the page we're testing.
+
+2. Same origin, browser proxy.
+
+   We build a simple proxy into our mojo app, and each browser that wants to
+   use it is configured to use that proxy.
+
+    http://www.example.com/TESTING/page.html  <= testing framework
+
+   This can then load any page on www.example.com into the frameset.
+
+   Use of a proxy means we can intercept requests for /TESTING/ and have our
+   app return those, then simply proxy any other pages.
+
+   Major downside is that we cannot cross domains in the iframe.  We can't
+   click a link that goes to www.another.com and hope to test that.
+
+   Note that with this approach, we'd require one "tab" / window in the client
+   browser per domain we would want to test.
+
+   For a limited number of TLDs, this ought to work just fine.
+
+3. webserver proxy-pass
+
+   While this could also be done by proxy-passing via "front end webserver" to
+   our Mojo backend testing app, this requires tighter integration with an
+   existing site.  Eg, to test www.example.com we'd require the webserver
+   running www.example.com added this proxy pass.   It's more limiting.
+
+4. Mangel domains
+
+    http://www.example.com.VULTURE.test/foo/bar/baz
+
+   The idea here would again to configure the client browser to use a proxy
+   running with our app.
+
+   That proxy would intercept any request for a vhost ending VULTURE.test.
+
+   Strip that, and request the actual vhost "www.example.com", returning the
+   content to the browser that requested
+   http://www.example.com.VULTURE.test/...
+
+   Any request NOT for something.VULTURE.test would get intercepted by the
+   proxy, and a 302 redirect would be issued to $domain.VULTURE.test/
+
+   This would effectively allow cross-domain testing to work.  But it's likely
+   to play havoc with things like cookie settings.
+
+   In short, it's too invasive a change.
+
+===
+
+Background reading:
+
+# http://stackoverflow.com/questions/3076414/ways-to-circumvent-the-same-origin-policy
+
+A very good overview of the various options available.  Note that we need a
+solution that works with iframes.
+
+# https://github.com/oyvindkinsey/easyXDM#readme
+
+If we can tolerate parsing the HTML and injecting code, this implementation may
+allow us to do cross-domain iframe communication.
+
+# http://stackoverflow.com/questions/1653308/access-control-allow-origin-multiple-origin-domains
+# http://stackoverflow.com/questions/4403865/which-browsers-allow-cross-domain-ajax-calls-with-access-control-allow-origin
+
+There is an "Access-Control-Allow-Origin" HTTP header, that our proxy could
+inject, that is meant to allow one domain to communicate with another.  Aka,
+busting the "same origin policy".
+
+Apparently doesn't work wrt to allowing iframes to communicate cross-domain.
+
+# http://api.jquery.com/jQuery.support/
+
+see "cors".
+
+# http://www.charlesproxy.com/download/
+# https://github.com/kraih/mojo/blob/master/examples/connect-proxy.pl
+
+The main limitation of our proxy/approach is that we cannot handle HTTPS pages.
+
+To do this, we'd need:
+
+    1. First, a working SSL proxy.  See mojo's examples/connect-proxy.pl as a
+       starting point, but note this isn't likely to be quick or easy.
+
+    2. Extend that, in a similar way to how "Charles proxy" works, issuing and
+       faking SSL certs.
+
+This would be nice, but it seems like a huge amount of work.
+
+For right now, the simple http only proxy allows us to test any non-https page,
+and only within the same domain.  That's still a huge win for us.  SSL support
+seems like a v2 feature.
+
+# WORKS curl --proxy 192.168.58.100:8899 http://example.org/
+# BROKE curl --proxy 192.168.58.100:8899 --proxytunnel http://example.org/
+#
+# BROKE curl --proxy 192.168.58.100:8899 https://example.com/robots.txt
+# BROKE curl --proxy 192.168.58.100:8899 --proxytunnel https://example.com/robots.txt

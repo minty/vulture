@@ -34,6 +34,9 @@ sub startup {
                 'Text::Xslate::Bridge::TT2',
                 'JavaScript::Value::Escape' => [qw(js)],
             ],
+            function => {
+                array => sub { return [ shift->all ] },
+            },
             verbose => 1,
             suffix  => 'tx',
         }
@@ -77,12 +80,20 @@ sub startup {
 
     $self->helper(active_tasks => sub {
         my ($self, $state) = @_;
-        return $self->rs('Task')->search_rs({ state => $state });
+        return $self->rs('Task')->search_rs({
+            state => $state
+        }, {
+            order_by => { -desc => 'created_at' },
+        });
     });
 
     $self->helper(active_clients => sub {
         my ($self, $state) = @_;
-        return $self->rs('Client')->search_rs({ active => 1 });
+        return $self->rs('Client')->search_rs({
+            active => 1,
+        }, {
+            order_by => { -desc => 'last_seen' },
+        });
     });
 
     $self->helper(ua_ip => sub {
@@ -139,6 +150,8 @@ sub startup {
 
     $r->get('/client/list')
         ->to(controller => 'client', action => 'list');
+    $r->get('/client/task/:task_id')
+        ->to(controller => 'client', action => 'task');
     $r->get('/api/client/list')
         ->to(controller => 'client', action => 'api_list');
     $r->get('/api/client/state')
