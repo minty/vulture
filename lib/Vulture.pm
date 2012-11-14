@@ -77,7 +77,11 @@ sub startup {
 
     $self->helper(active_tasks => sub {
         my ($self, $state) = @_;
-        return $self->rs('Task')->search_rs({ state => $state });
+        return $self->rs('Task')->search_rs({
+            state => $state
+        }, {
+            order_by => { -desc => 'created_at' },
+        });
     });
 
     $self->helper(active_clients => sub {
