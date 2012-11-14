@@ -4,14 +4,15 @@
 
 <h1>Edit test</h1>
 
-<div>test name: <input type=text name=name></div>
-<div>test url: <input type=text name=url></div>
+<div>test id: <input type=text name=id value="[% id %]"></div>
+<div>test url: <input type=text name=url value="http://192.168.58.100:8899/task/list/complete"></div>
 
 <textarea name=test rows=20 cols=70>[% test %]</textarea>
 
 <p>
 <input type=button value=run>
 <input type=button value=save>
+<span id=console></span>
 </p>
 
 <div>
@@ -20,6 +21,36 @@
 <script type="text/javascript">
   $(function() {
 
+    var save_btn = $('input[value="save"]');
+    save_btn.on('click', function(e) {
+
+        save_btn.val('saving');
+        $('#console').hide();
+        var js  = $('textarea').val();
+        var id  = $('input[name="id"]').val();
+        var url = $('input[name="url"]').val();
+
+        console.log(id);
+        console.log(url);
+        console.log(js);
+
+        $.ajax('/api/test/save/' + id, {
+            'data': {
+                'test_js': js,
+                'url'    : url,
+            },
+            'success': function(data) {
+                var dt = new Date;
+                $('#console')
+                    .text(id + ' saved at ' + dt)
+                    .fadeIn();
+                save_btn.val('save');
+            },
+            'error': function(xhr, status) {
+                console.log('error saving test ' + id + ' ' + status);
+            }
+        });
+    });
   });
 </script>
 [% END %]

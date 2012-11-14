@@ -178,6 +178,8 @@ sub startup {
 
     $r->get('/test/edit/:test_id')
         ->to(controller => 'test', action => 'edit');
+    $r->get('/api/test/save/:test_id')
+        ->to(controller => 'test', action => 'save');
 
     $r->get('/page/:page')
         ->to(controller => 'page', action => 'page');

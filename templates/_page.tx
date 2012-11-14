@@ -61,6 +61,15 @@
         width: 800px;
         height: 100%;
       }
+      .testedit input[name="id"],
+      .testedit input[name="url"] {
+        width: 30em;
+      }
+      #console {
+        font-size: 80%;
+        margin-left: 1em;
+        color: #666;
+      }
     </style>
     <script type="text/javascript" src="/jquery.js"></script>
     <script type="text/javascript">
