@@ -3,7 +3,6 @@ package Vulture::Task;
 use Mojo::Base 'Mojolicious::Controller';
 
 use common::sense;
-use Path::Class;
 use File::Slurp qw<slurp>;
 use Mojo::IOLoop;
 

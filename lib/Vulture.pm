@@ -10,6 +10,7 @@ use Mojo::IOLoop;
 use Text::Xslate::Bridge::TT2;
 use JavaScript::Value::Escape;
 use JSON::XS;
+use Path::Class::File;
 use Vulture::Schema;
 
 # setup with
