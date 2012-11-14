@@ -34,6 +34,9 @@ sub startup {
                 'Text::Xslate::Bridge::TT2',
                 'JavaScript::Value::Escape' => [qw(js)],
             ],
+            function => {
+                array => sub { return [ shift->all ] },
+            },
             verbose => 1,
             suffix  => 'tx',
         }
@@ -147,6 +150,8 @@ sub startup {
 
     $r->get('/client/list')
         ->to(controller => 'client', action => 'list');
+    $r->get('/client/task/:task_id')
+        ->to(controller => 'client', action => 'task');
     $r->get('/api/client/list')
         ->to(controller => 'client', action => 'api_list');
     $r->get('/api/client/state')

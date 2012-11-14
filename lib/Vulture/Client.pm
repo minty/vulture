@@ -109,4 +109,17 @@ sub eject {
     return $self->to_json({ left => $self->client_hash($client) });
 }
 
+sub task {
+    my ($self) = @_;
+
+    my $task_id = $self->param('task_id')
+        or return $self->to_json({ error => { slug => 'No task id' } });
+    my $task = $self->rsfind(Task => $task_id)
+        or return $self->to_json({ error => { slug => 'Bad task id' } });
+    $self->stash(
+        task => $task,
+    );
+    return $self->render(template => 'client/task');
+}
+
 1;
