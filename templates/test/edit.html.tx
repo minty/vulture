@@ -1,0 +1,25 @@
+[% WRAPPER "_page.tx" WITH body_class = 'testedit', type = 'index' %]
+
+<iframe src="/task/list/complete"></iframe>
+
+<h1>Edit test</h1>
+
+<div>test name: <input type=text name=name></div>
+<div>test url: <input type=text name=url></div>
+
+<textarea name=test rows=20 cols=70>[% test %]</textarea>
+
+<p>
+<input type=button value=run>
+<input type=button value=save>
+</p>
+
+<div>
+</div>
+
+<script type="text/javascript">
+  $(function() {
+
+  });
+</script>
+[% END %]

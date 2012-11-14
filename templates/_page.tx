@@ -53,6 +53,14 @@
       .clientlist li.left a {
         color: #ccc;
       }
+      .testedit iframe {
+        position: absolute;
+        right: 0;
+        top: 0;
+        z-index: -1;
+        width: 800px;
+        height: 100%;
+      }
     </style>
     <script type="text/javascript" src="/jquery.js"></script>
     <script type="text/javascript">

@@ -175,6 +175,9 @@ sub startup {
     $r->get('/ip/show')
         ->to(controller => 'ip', action => 'show');
 
+    $r->get('/test/edit/:test_id')
+        ->to(controller => 'test', action => 'edit');
+
     $r->get('/page/:page')
         ->to(controller => 'page', action => 'page');
 }
