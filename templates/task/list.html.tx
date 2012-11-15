@@ -11,8 +11,8 @@
         [% IF task.started_at %]
           <li>Started at [% task.started_at %]</li>
         [% END %]
-        [% IF task.finished_at %]
-          <li>Finished at [% task.finished_at %] <small>(took [% task.finished_at - task.started_at %] seconds)</small></li>
+        [% IF task.started_at && task.finished_at %]
+          <li>Finished at [% task.finished_at %] <small>(took [% task.finished_at.epoch - task.started_at.epoch %] seconds)</small></li>
         [% END %]
       </ul></li>
     [% END %]
