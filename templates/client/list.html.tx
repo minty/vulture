@@ -10,8 +10,8 @@
       data-agent="[% client.agent %]"
     ><ul>
       <li>
-        <b><a href="/ip/show/?ip=[% client.ip | uri %]">[% client.ip %]</a> ^
-           <a href="/agent/show/?agent=[% client.agent | uri %]">[% client.agent %]</a></b>
+        <b><a href="[% api_base() %]/ip/show/?ip=[% client.ip | uri %]">[% client.ip %]</a> ^
+           <a href="[% api_base() %]/agent/show/?agent=[% client.agent | uri %]">[% client.agent %]</a></b>
       </li>
       <li>last seen [% client.last_seen %]</li>
       <li>guid/session id [% client.guid %] / [% client.sessionid %]</li>
@@ -23,7 +23,7 @@
         [% client.tasks.search({ state => 'complete' }).count %] completed
       </li>
       <li>
-        <a href="/client/about/[% client.id %]">about</a>[%
+        <a href="[% api_base() %]/client/about/[% client.id %]">about</a>[%
             IF client.active %] | <span class=eject>disconnect</span>[% END %]
       </li>
     </ul></li>

@@ -1,11 +1,11 @@
 [% WRAPPER "_page.tx" WITH body_class = 'testedit', type = 'index' %]
 
-<iframe src="/task/list/complete"></iframe>
+<iframe src="[% api_base() %]/task/list/complete"></iframe>
 
 <h1>Edit test</h1>
 
 <div>test id: <input type=text name=id value="[% id %]"></div>
-<div>test url: <input type=text name=url value="http://192.168.58.100:8899/task/list/complete"></div>
+<div>test url: <input type=text name=url value="http://192.168.58.100:8899[% api_base() %]task/list/complete"></div>
 
 <textarea name=test rows=20 cols=70>[% test %]</textarea>
 
@@ -83,7 +83,7 @@
         console.log(url);
         console.log(js);
 
-        $.ajax('/api/test/save/' + id, {
+        $.ajax('[% api_base() %]/api/test/save/' + id, {
             'data': {
                 'test_js': js,
                 'url'    : url,

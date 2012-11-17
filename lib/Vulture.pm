@@ -38,7 +38,8 @@ sub startup {
                 'JavaScript::Value::Escape' => [qw(js)],
             ],
             function => {
-                array => sub { return [ shift->all ] },
+                array    => sub { return [ shift->all ] },
+                api_base => sub { return $self->config->{base_path} || '' },
             },
             verbose => 1,
             suffix  => 'tx',
@@ -138,52 +139,54 @@ sub startup {
         $clients->update({ active => 0 });
     });
 
-    my $r = $self->routes;
-    $r->get('/task/list/:state')
+    my $r    = $self->routes;
+    my $base = $self->config->{base_path} || '';
+
+    $r->get("$base/task/list/:state")
         ->to(controller => 'task', action => 'list');
-    $r->get('/api/task/list/:state')
+    $r->get("$base/api/task/list/:state")
         ->to(controller => 'task', action => 'api_list');
-    $r->get('/api/task/get')
+    $r->get("$base/api/task/get")
         ->to(controller => 'task', action => 'get');
-    $r->get('/api/task/done')
+    $r->get("$base/api/task/done")
         ->to(controller => 'task', action => 'done');
 
-    $r->get('/api/run/:id')
+    $r->get("$base/api/run/:id")
         ->to(controller => 'task', action => 'run');
 
-    $r->get('/client/list')
+    $r->get("$base/client/list")
         ->to(controller => 'client', action => 'list');
-    $r->get('/client/task/:task_id')
+    $r->get("$base/client/task/:task_id")
         ->to(controller => 'client', action => 'task');
-    $r->get('/api/client/list')
+    $r->get("$base/api/client/list")
         ->to(controller => 'client', action => 'api_list');
-    $r->get('/api/client/state')
+    $r->get("$base/api/client/state")
         ->to(controller => 'client', action => 'state');
-    $r->get('/api/client/join')
+    $r->get("$base/api/client/join")
         ->to(controller => 'client', action => 'join');
-    $r->get('/api/client/eject/:client_id')
+    $r->get("$base/api/client/eject/:client_id")
         ->to(controller => 'client', action => 'eject');
-    $r->get('/api/client/leave')
+    $r->get("$base/api/client/leave")
         ->to(controller => 'client', action => 'leave');
 
-    $r->get('/agent/list')
+    $r->get("$base/agent/list")
         ->to(controller => 'agent', action => 'list');
-    $r->get('/agent/show')
+    $r->get("$base/agent/show")
         ->to(controller => 'agent', action => 'show');
-    $r->get('/agent/ip/show')
+    $r->get("$base/agent/ip/show")
         ->to(controller => 'agent', action => 'showip');
 
-    $r->get('/ip/list')
+    $r->get("$base/ip/list")
         ->to(controller => 'ip', action => 'list');
-    $r->get('/ip/show')
+    $r->get("$base/ip/show")
         ->to(controller => 'ip', action => 'show');
 
-    $r->get('/test/edit/:test_id')
+    $r->get("$base/test/edit/:test_id")
         ->to(controller => 'test', action => 'edit');
-    $r->get('/api/test/save/:test_id')
+    $r->get("$base/api/test/save/:test_id")
         ->to(controller => 'test', action => 'save');
 
-    $r->get('/page/:page')
+    $r->get("$base/page/:page")
         ->to(controller => 'page', action => 'page');
 
     # $r->get('/(*everything)' )->to('mycontroller#aliases');

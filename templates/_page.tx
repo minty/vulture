@@ -80,7 +80,7 @@
         console.log(o.data('guid'));
         console.log(o.data('sessionid'));
         console.log(o.data('agent'));
-        $.ajax('/api/client/eject/' + o.data('id'), {
+        $.ajax('[% api_base() %]/api/client/eject/' + o.data('id'), {
             'success': function(data) {
                 console.log(data);
                 if (typeof data.left != 'undefined') {
