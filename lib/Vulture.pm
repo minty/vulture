@@ -17,6 +17,8 @@ use Vulture::Schema;
 #   sqlite3 vulture.sqlite < ./schema.sql
 # run with
 #   morbo -l "http://192.168.58.100:8899" script/vulture
+#   hypnotoad script/vulture --foreground
+#   hypnotoad script/vulture --stop
 
 # https://github.com/oyvindkinsey/easyXDM#readme
 
@@ -183,6 +185,16 @@ sub startup {
 
     $r->get('/page/:page')
         ->to(controller => 'page', action => 'page');
+
+    # $r->get('/(*everything)' )->to('mycontroller#aliases');
+    # /usr/local/share/perl/5.10.1/Mojo/Message/Request.pm
+    # extract_start_line,  plackup and morbo/hypnotoad produce different results here.
+    # plackup --listen 192.168.58.100:8899 -s Starman mojo/vulture/script/vulture
+    # hypnotoad script/vulture --foreground
+    $r->any('/')
+        ->to(controller => 'proxy', action => 'proxy');
+    $r->any('/*foo')
+        ->to(controller => 'proxy', action => 'proxy');
 }
 
 sub _to_json {

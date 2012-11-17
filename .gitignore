@@ -1,5 +1,6 @@
 *.swp
 vulture.sqlite
+script/hypnotoad.pid
 tmp/
 blib/
 .build/
