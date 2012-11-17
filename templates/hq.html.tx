@@ -1,4 +1,5 @@
-<h1>hello world</h1>
+[% WRAPPER "_page.tx" WITH body_class = 'index', type = 'index' %]
+<h1>client hq</h1>
 
 <input id=join  type=button value=join>
 <input id=leave type=button value=leave>
@@ -41,7 +42,7 @@
             return;
         }
         var start = (new Date).getTime();
-        jqXHR = $.ajax('/api/task/get', {
+        jqXHR = $.ajax('[% api_base() %]/api/task/get', {
             'data': {
                 'guid':      localStorage.guid,
                 'sessionid': sessionid,
@@ -86,7 +87,7 @@
     }
 
     function send_result(task_id, clienttask_id, result) {
-        $.ajax('/api/task/done', {
+        $.ajax('[% api_base() %]/api/task/done', {
             'data'   : {
                 'task_id'      : task_id,
                 'clienttask_id': clienttask_id,
@@ -126,7 +127,7 @@
     }
 
     $('#join').on('click', function(e) {
-        $.ajax('/api/client/join/', {
+        $.ajax('[% api_base() %]/api/client/join/', {
             'data': {
                 'guid':      localStorage.guid,
                 'sessionid': sessionid,
@@ -140,7 +141,7 @@
 
     $('#leave').on('click', function(e) {
         stop_working();
-        $.ajax('/api/client/leave/', {
+        $.ajax('[% api_base() %]/api/client/leave/', {
             'data': {
                 'guid':      localStorage.guid,
                 'sessionid': sessionid,
@@ -161,7 +162,7 @@
     });
 
     function get_state(on_success) {
-        $.ajax('/api/client/state/', {
+        $.ajax('[% api_base() %]/api/client/state/', {
             'data': {
                 'guid':      localStorage.guid,
                 'sessionid': sessionid,
@@ -197,3 +198,4 @@
 
   });
 </script>
+[% END %]

@@ -4,6 +4,14 @@ use Mojo::Base 'Mojolicious::Controller';
 
 use common::sense;
 
+#get '/client/' => sub {
+sub hq {
+    my ($self) = @_;
+    $self->stash(
+    );
+    return $self->render(template => 'hq');
+}
+
 #get '/client/list/' => sub {
 sub list {
     my ($self) = @_;

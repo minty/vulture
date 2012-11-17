@@ -168,6 +168,8 @@ sub startup {
         ->to(controller => 'client', action => 'eject');
     $r->get("$base/api/client/leave")
         ->to(controller => 'client', action => 'leave');
+    $r->get("$base/client/")
+        ->to(controller => 'client', action => 'hq');
 
     $r->get("$base/agent/list")
         ->to(controller => 'agent', action => 'list');
@@ -185,9 +187,6 @@ sub startup {
         ->to(controller => 'test', action => 'edit');
     $r->get("$base/api/test/save/:test_id")
         ->to(controller => 'test', action => 'save');
-
-    $r->get("$base/page/:page")
-        ->to(controller => 'page', action => 'page');
 
     # $r->get('/(*everything)' )->to('mycontroller#aliases');
     # /usr/local/share/perl/5.10.1/Mojo/Message/Request.pm
