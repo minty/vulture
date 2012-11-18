@@ -53,6 +53,7 @@
       .clientlist li.left a {
         color: #ccc;
       }
+      .hq iframe,
       .testedit iframe {
         position: absolute;
         right: 0;

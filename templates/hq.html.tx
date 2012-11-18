@@ -1,4 +1,7 @@
-[% WRAPPER "_page.tx" WITH body_class = 'index', type = 'index' %]
+[% WRAPPER "_page.tx" WITH body_class = 'hq', type = 'index' %]
+
+<iframe></iframe>
+
 <h1>client hq</h1>
 
 <input id=join  type=button value=join>
@@ -36,11 +39,25 @@
     var jqXHR;
     var timer;
 
+    function run_tests(id, tests) {
+        l('finished loading, running tests');
+        var iframe = $('iframe');
+        var target = $( iframe.get(0).contentWindow.document );
+        var frame_head = $('head',target).get(0);
+        var script = document.createElement('script');
+        script.type = 'text/javascript';
+        script.class = 'autoscript';
+        script.textContent = tests;
+        frame_head.appendChild(script);
+        var dt = new Date;
+        l('finished running test ' + id + ' run at ' + dt);
+    }
     function do_work() {
         if (!working) {
             clearTimeout(timer);
             return;
         }
+        var iframe = $('iframe');
         var start = (new Date).getTime();
         jqXHR = $.ajax('[% api_base() %]/api/task/get', {
             'data': {
@@ -49,21 +66,23 @@
             },
             'success': function(data) {
                 if (data.run) {
-                    var script = $('<script class=autoscript type="text/javascript"><' + '/script>');
-                    script.text( data.run.task.test );
+                    var test = data.run.task;
                     var msg = '';
-                    try {
-                        $('body').append(script);
-                        msg = 'hardwired result text';
-                        $('.autoscript').remove();
-                    } catch(e) {
-                        msg = 'FAILED';
-                    }
-                    send_result(
-                        data.run.task.id,
-                        data.run.task.clienttask_id,
-                        msg
-                    );
+                    iframe.attr('src', test.test_data.url );
+                    iframe.load(function() {
+                        try {
+                            run_tests( test.id, test.test );
+                            $('.autoscript').remove();
+                            msg = 'SUCCESS';
+                        } catch(e) {
+                            msg = 'FAILED';
+                        }
+                        send_result(
+                            test.id,
+                            test.clienttask_id,
+                            msg
+                        );
+                    });
                 }
                 else if (data.error) {
                     console.log(data.error.slug);
