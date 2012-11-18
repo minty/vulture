@@ -11,6 +11,7 @@ use Text::Xslate::Bridge::TT2;
 use JavaScript::Value::Escape;
 use JSON::XS;
 use Path::Class::File;
+use FindBin;
 use Vulture::Schema;
 
 # setup with
@@ -20,11 +21,11 @@ use Vulture::Schema;
 #   hypnotoad script/vulture --foreground
 #   hypnotoad script/vulture --stop
 
-# https://github.com/oyvindkinsey/easyXDM#readme
-
 # This method will run once at server start
 sub startup {
     my ($self) = @_;
+
+    my $bin = "$FindBin::Bin/..";
 
     # config / setup
     $self->plugin(Config => {
@@ -46,7 +47,7 @@ sub startup {
         }
     });
 
-    my $sql_db = $self->config->{repo_dir} . '/vulture.sqlite';
+    my $sql_db = "$bin/vulture.sqlite";
     $self->helper(schema => sub {
         state $db = Vulture::Schema->connect("dbi:SQLite:dbname=$sql_db");
         return $db;
@@ -62,7 +63,7 @@ sub startup {
     $self->helper(filepath => sub {
         my ($self, $rel) = @_;
         return Path::Class::File->new(
-            $self->config->{repo_dir} . "$rel.txt"
+            "$bin/$rel.txt"
         );
     });
 
