@@ -18,8 +18,11 @@ sub edit {
     return $self->render_not_found
         if !-e $file->stringify;
 
+    my $path = $file->stringify;
+
     $self->stash(
         test => scalar $file->slurp,
+        test_data => $self->json->decode( scalar slurp "$path.json" ),
         id   => $test_id,
     );
     return $self->render(template => 'test/edit');
