@@ -2,6 +2,8 @@ package Vulture::Proxy;
 
 use Mojo::Base 'Mojolicious::Controller';
 use Mojo::UserAgent;
+use URI;
+use List::MoreUtils qw<any>;
 use common::sense;
 
 my $ua = Mojo::UserAgent->new;
@@ -17,6 +19,18 @@ sub proxy {
     my $url           = $client_req->url;
     my $method        = $client_req->method;
     my $server_req_tx = $ua->build_tx($method => $url);
+
+    # This should be improved.  We want to avoid trying to proxy requests to
+    # ourselves.  We can't know what ip/port/domain we're running on, unless we
+    # tell ourselves via config.  But is there a better way?  Check the http
+    # headers for forwarded-for?  This is a dirty old hack that suffices for me
+    # for now.  We should at least be checking port also, and using faster
+    # matching.
+    my $uri           = URI->new($url);
+    my $authority     = $uri->authority;
+    return $self->render_not_found
+        if any { $authority eq $_ } @{ $self->config->{do_no_proxy} };
+
     my %forbid        = map { $_ => 1 } qw<Proxy-Connection>;
 
     warn "Proxying $method $url";
