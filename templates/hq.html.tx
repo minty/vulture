@@ -19,7 +19,7 @@
     window.onbeforeunload = function() {
         return "Sure?  It'll reset your session";
     }
-    function l(msg) {
+    function log(msg) {
         var dt = new Date;
         $('#log').prepend(
             $('<p></p>').text(dt + ' : ' + msg)
@@ -42,17 +42,16 @@
     var timer;
 
     function run_tests(id, tests) {
-        l('finished loading, running tests');
-        var iframe = $('iframe');
-        var target = $( iframe.get(0).contentWindow.document );
-        var frame_head = $('head',target).get(0);
+        log('finished loading, running tests');
+
         var script = document.createElement('script');
         script.type = 'text/javascript';
         script.class = 'autoscript';
         script.textContent = tests;
-        frame_head.appendChild(script);
+        $('head').get(0).appendChild(script);
+
         var dt = new Date;
-        l('finished running test ' + id + ' run at ' + dt);
+        log('finished running test ' + id + ' run at ' + dt);
     }
     function do_work() {
         if (!working) {
@@ -128,7 +127,7 @@
         if (working) return;
         working = true;
         $('#msg').text(working);
-        l('starting work');
+        log('starting work');
         $('#stop').attr('disabled', false);
         $('#work').attr('disabled', 'disabled');
         do_work();
@@ -140,7 +139,7 @@
         if (working) {
             working = false;
             $('#msg').text(working);
-            l('stopping work');
+            log('stopping work');
         }
         if (jqXHR) jqXHR.abort();
         var work = $('#join').attr('disabled') == 'disabled' ? false : 'disabled';
@@ -155,7 +154,7 @@
                 'sessionid': sessionid,
             },
             'success': function(data) {
-                l(typeof data.joined != 'undefined' ? 'joined' : 'failed');
+                log(typeof data.joined != 'undefined' ? 'joined' : 'failed');
                 update_state();
             }
         });
@@ -169,7 +168,7 @@
                 'sessionid': sessionid,
             },
             'success': function(data) {
-                l(typeof data.left != 'undefined' ? 'left' : 'failed');
+                log(typeof data.left != 'undefined' ? 'left' : 'failed');
                 update_state();
             }
         });
@@ -196,7 +195,7 @@
     function update_state() {
         get_state(function(data) {
             var state = data.active ? 'joined' : 'left';
-            l('state is ' + state + ' for ' + localStorage.guid + ' / ' + sessionid);
+            log('state is ' + state + ' for ' + localStorage.guid + ' / ' + sessionid);
             if (data.active) {
                 $('#join').attr('disabled', 'disabled');
                 $('#leave').attr('disabled', false);

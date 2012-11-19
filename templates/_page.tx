@@ -74,6 +74,19 @@
     </style>
     <script type="text/javascript" src="/jquery.js"></script>
     <script type="text/javascript">
+        function l(m) { console.log(m) }
+        /* This would be called from a specific test.  It's passed a function
+         * ref, that we want to inject and run in the scope of the iframe */
+        function do_test(func) {
+            var script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.class = 'autoscript';
+            script.textContent = '(' + func.toString() + ')()';
+            var iframe = $('iframe');
+            var target = $( iframe.get(0).contentWindow.document );
+            var frame_head = $('head',target).get(0);
+            frame_head.appendChild(script);
+        }
       $(function() {
         $('.clientlist li.active .eject').on('click', function(e) {
         var o = $(this).parents('li.active');
