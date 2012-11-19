@@ -1,7 +1,7 @@
 package Vulture::Client;
 
 use Mojo::Base 'Mojolicious::Controller';
-
+use HTTP::BrowserDetect;
 use common::sense;
 
 #get '/client/' => sub {
@@ -49,12 +49,19 @@ sub join {
         joined_at => time,
     }) }
     else         {
+        my $browser = HTTP::BrowserDetect->new($ua);
+
         $client = $rs->create({
-            agent     => $ua,
-            ip        => $ip,
-            guid      => $guid,
-            sessionid => $sessionid,
-            active    => 1,
+            agent                 => $ua,
+            agent_device          => $browser->device_name    || '',
+            agent_os              => $browser->os_string      || '',
+            agent_browser         => $browser->browser_string || '',
+            agent_browser_version => $browser->public_version || '',
+            agent_engine          => $browser->engine_string  || '',
+            ip                    => $ip,
+            guid                  => $guid,
+            sessionid             => $sessionid,
+            active                => 1,
         });
     }
     return $self->to_json({ joined => {
