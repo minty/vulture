@@ -19,6 +19,8 @@
 
 <textarea name=test rows=20 cols=70>[% test %]</textarea>
 
+<div id=log></div>
+
 <script type="text/javascript">
     function run_tests() {
         var id     = $('input[name="id"]').val();
