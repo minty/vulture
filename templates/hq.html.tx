@@ -16,7 +16,9 @@
 
 <script type="text/javascript">
   $(function() {
-
+    window.onbeforeunload = function() {
+        return "Sure?  It'll reset your session";
+    }
     function l(msg) {
         var dt = new Date;
         $('#log').prepend(
@@ -69,7 +71,8 @@
                     var test = data.run.task;
                     var msg = '';
                     iframe.attr('src', test.test_data.url );
-                    iframe.load(function() {
+                    iframe.off('load.autoscript');
+                    iframe.on('load.autoscript', function() {
                         try {
                             run_tests( test.id, test.test );
                             $('.autoscript').remove();

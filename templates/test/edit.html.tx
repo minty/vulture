@@ -66,12 +66,14 @@
         var iframe = $('iframe');
         l( "Loading " + url );
 
-        iframe.attr('src', url );
-        iframe.load(function() {
-            lar_btn.val('running');
-            run_tests();
-            lar_btn.val('load & run');
-        });
+        iframe
+            .attr('src', url )
+            .off('load.autoscript')
+            .on('load.autoscript', function() {
+                lar_btn.val('running');
+                run_tests();
+                lar_btn.val('load & run');
+            });
     });
 
     save_btn.on('click', function(e) {
