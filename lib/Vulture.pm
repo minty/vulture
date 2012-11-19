@@ -184,6 +184,8 @@ sub startup {
     $r->get("$base/ip/show")
         ->to(controller => 'ip', action => 'show');
 
+    $r->get("$base/test/edit/")
+        ->to(controller => 'test', action => 'edit');
     $r->get("$base/test/edit/:test_id")
         ->to(controller => 'test', action => 'edit');
     $r->get("$base/api/test/save/:test_id")

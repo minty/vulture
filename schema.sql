@@ -31,3 +31,7 @@ CREATE TABLE client_task (
     state       CHAR(10) NOT NULL default 'pending',
     result      TEXT
 );
+DROP TABLE IF EXISTS test;
+CREATE TABLE test (
+    id INTEGER PRIMARY KEY AUTOINCREMENT
+);

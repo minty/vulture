@@ -9,21 +9,25 @@ use File::Slurp qw<slurp write_file>;
 sub edit {
     my ($self) = @_;
 
-    my $test_id = $self->param('test_id')
-        or return $self->to_json(
-            { error => { slug => 'Missing test_id in url' } },
-        );
+    my $test_id = $self->param('test_id');
+    if (!$test_id) {
+        $test_id = $self->rs('Test')->create({})->id;
+        return $self->redirect_to("/TESTING/test/edit/$test_id");
+    }
 
     my $file = $self->filepath('/tests/' . $test_id);
-    return $self->render_not_found
-        if !-e $file->stringify;
-
     my $path = $file->stringify;
 
+    my ($test, $test_data) = ('', {});
+    if (-e $path) {
+        $test = $file->slurp;
+        $test_data = $self->json->decode( scalar slurp "$path.json" );
+    }
+
     $self->stash(
-        test => scalar $file->slurp,
-        test_data => $self->json->decode( scalar slurp "$path.json" ),
-        id   => $test_id,
+        test      => $test,
+        test_data => $test_data,
+        id        => $test_id,
     );
     return $self->render(template => 'test/edit');
 }
@@ -34,27 +38,25 @@ sub save {
     my ($self) = @_;
 
     my $test_id = $self->param('test_id')
-        or return $self->to_json(
+        || return $self->to_json(
             { error => { slug => 'Missing test_id in url' } },
         );
+    return $self->to_json(
+        { error => { slug => 'invalid test id' } },
+    ) if $test_id !~ /\A\d+\z/;
 
     my $js = $self->param('test_js')
-        or return $self->to_json(
+        || return $self->to_json(
             { error => { slug => 'Missing test js in post data' } },
         );
 
     my $url = $self->param('url')
-        or return $self->to_json(
+        || return $self->to_json(
             { error => { slug => 'Missing test url in post data' } },
         );
 
     my $file = $self->filepath('/tests/' . $test_id);
     my $path = $file->stringify;
-    return $self->render_not_found
-        if !-e $path;
-
-    die "Cannot write to $path"
-        if !-w $path;
 
     # Our tests are js code, and we'd like those tracked via git for all the
     # usual reasons.  The url and other meta data is a fundemental part of the

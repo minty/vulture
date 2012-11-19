@@ -4,8 +4,11 @@
 
 <h1>Edit test</h1>
 
-<div>test id: <input type=text name=id value="[% id %]"></div>
-<div>test url: <input type=text name=url value="[% test_data.url |html %]"></div>
+<input type=hidden name=id value="[% id %]">
+<div>
+  test url: <input type=text name=url value="[% test_data.url |html %]">
+  [launch tester client]
+  </div>
 
 <textarea name=test rows=20 cols=70>[% test %]</textarea>
 
