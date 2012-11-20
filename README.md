@@ -5,16 +5,14 @@ a Mojolicious project for running javascript based tests in multiple, distribute
 
 Roughly:
 
-  # clone https://github.com/minty/vulture/
-  cd vulture.git
-  sqlite3 vulture.sqlite < ./schema.sql
-  morbo ./script/vulture
+    # clone https://github.com/minty/vulture/
+    cd vulture.git
+    sqlite3 vulture.sqlite < ./schema.sql
+    morbo ./script/vulture
 
 Next, configure your browser to use the server/port as it's HTTP proxy.
 
-Then visit http://example.com/TESTING/client/ in a browser.
-
-* http://example.com/TESTING/client/ to launch a client tester
+Then visit http://example.com/TESTING/client/ in a browser to launch a client tester.
 
 You join, then click "work".
 
