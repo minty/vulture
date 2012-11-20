@@ -1,2 +1,10 @@
-alert('hello world');
-alert('done');
+var dt = new Date;
+
+$('#log').prepend( $('<p></p>').text('xbefore ' + dt) );
+
+do_test(function() {
+  $('#right-col').toggle();
+  alert(1);
+});
+
+$('#log').prepend( $('<p></p>').text('after ' + dt) );

@@ -123,10 +123,13 @@ sub on_timer_finish {
         if $task->state ne 'running';
     $clienttask->update($data);
 
+    my $path = $file->stringify;
+
     return $self->to_json({ run => { task => {
         id            => $task->id,
         clienttask_id => $clienttask->id,
         test          => scalar $file->slurp,
+        test_data     => $self->json->decode( scalar slurp "$path.json" ),
     } } });
 }
 
@@ -147,8 +150,13 @@ sub done {
     $clienttask->update({
         state       => 'complete',
         finished_at => time,
-        result      => $self->param('result') || '' }
-    );
+    });
+    for my $result ($self->param('result[]')) {
+        $self->rs('ClientTaskResult')->create({
+            client_task_id => $clienttask->id,
+            result         => $result,
+        });
+    }
 
     # If all clienttasks for the current task are now 'complete'
     # then update $task->state == complete

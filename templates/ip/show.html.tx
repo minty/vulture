@@ -4,7 +4,7 @@
 <ul class=agentlist>
   [% WHILE (agent = agents.next) %]
     <li>
-      <a href="/agent/ip/show/?agent=[% agent.agent | uri %]&ip=[% ip | uri %]">
+      <a href="[% api_base() %]/agent/ip/show/?agent=[% agent.agent | uri %]&ip=[% ip | uri %]">
       [% agent.get_column('count') %] clients using <b>[% agent.agent %]</b>
       </a>
     </li>

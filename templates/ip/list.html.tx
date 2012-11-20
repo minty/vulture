@@ -3,7 +3,7 @@
 <ul class=iplist>
   [% WHILE (ip = ips.next) %]
     <li>
-      <a href="/ip/show/?ip=[% ip.ip | uri %]">
+      <a href="[% api_base() %]/ip/show/?ip=[% ip.ip | uri %]">
       [% ip.get_column('count') %] clients from <b>[% ip.ip %]</b>
       </a>
     </li>

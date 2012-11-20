@@ -1,13 +1,14 @@
 [% WRAPPER "_page.tx" WITH body_class = 'testedit', type = 'index' %]
 
-<iframe src="/task/list/complete"></iframe>
+<iframe src="[% test_data.url |html %]"></iframe>
 
 <h1>Edit test</h1>
 
-<div>test id: <input type=text name=id value="[% id %]"></div>
-<div>test url: <input type=text name=url value="http://192.168.58.100:8899/task/list/complete"></div>
-
-<textarea name=test rows=20 cols=70>[% test %]</textarea>
+<input type=hidden name=id value="[% id %]">
+<div>
+  test url: <input type=text name=url value="[% test_data.url |html %]">
+  [launch tester client]
+  </div>
 
 <p>
 <input type=button value=run>
@@ -16,31 +17,29 @@
 <span id=console></span>
 </p>
 
-<div>
-</div>
+<textarea name=test rows=20 cols=70>[% test %]</textarea>
+
+<div id=log></div>
 
 <script type="text/javascript">
-    function l(m) { console.log(m) }
     function run_tests() {
-        l('finished loading, running tests');
         var id     = $('input[name="id"]').val();
         var tests  = $('textarea');
-        var iframe = $('iframe');
-        var target = $( iframe.get(0).contentWindow.document );
-        var frame_head = $('head',target).get(0);
+        start_tests();
         var script = document.createElement('script');
         script.type = 'text/javascript';
         script.class = 'autoscript';
         script.textContent = tests.val();
-        frame_head.appendChild(script);
-        l('finished running tests');
+        $('head').get(0).appendChild(script);
         var dt = new Date;
         $('#console')
             .text(id + ' run at ' + dt)
             .fadeIn();
+        $.each(test_log, function(i, elem) {
+            l(elem);
+        });
     }
   $(function() {
-
     var save_btn = $('input[value="save"]');
     var run_btn  = $('input[value="run"]');
     var lar_btn  = $('#lar');
@@ -63,12 +62,14 @@
         var iframe = $('iframe');
         l( "Loading " + url );
 
-        iframe.attr('src', url );
-        iframe.load(function() {
-            lar_btn.val('running');
-            run_tests();
-            lar_btn.val('load & run');
-        });
+        iframe
+            .attr('src', url )
+            .off('load.autoscript')
+            .on('load.autoscript', function() {
+                lar_btn.val('running');
+                run_tests();
+                lar_btn.val('load & run');
+            });
     });
 
     save_btn.on('click', function(e) {
@@ -83,7 +84,7 @@
         console.log(url);
         console.log(js);
 
-        $.ajax('/api/test/save/' + id, {
+        $.ajax('[% api_base() %]/api/test/save/' + id, {
             'data': {
                 'test_js': js,
                 'url'    : url,
@@ -102,4 +103,6 @@
     });
   });
 </script>
+<p id=log></p>
+
 [% END %]

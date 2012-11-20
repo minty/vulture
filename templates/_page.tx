@@ -53,6 +53,7 @@
       .clientlist li.left a {
         color: #ccc;
       }
+      .hq iframe,
       .testedit iframe {
         position: absolute;
         right: 0;
@@ -73,6 +74,62 @@
     </style>
     <script type="text/javascript" src="/jquery.js"></script>
     <script type="text/javascript">
+        function l(m) { console.log(m) }
+        /* This would be called from a specific test.  It's passed a function
+         * ref, that we want to inject and run in the scope of the iframe */
+        function do_test(func) {
+            var script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.class = 'autoscript';
+            script.textContent = '(' + func.toString() + ')()';
+            var iframe = $('iframe');
+            var target = $( iframe.get(0).contentWindow.document );
+            var frame_head = $('head',target).get(0);
+            frame_head.appendChild(script);
+        }
+        {
+            var _code;
+            var loading = false;
+            function _with_jquery() {
+                if (typeof $('iframe').get(0).contentWindow.jQuery == 'undefined') {
+                    setTimeout('_with_jquery()', 100);
+                    return;
+                }
+                else {
+                    _code();
+                }
+            }
+            function with_jquery(code) {
+                if (!loading && typeof $('iframe').get(0).contentWindow.jQuery == 'undefined') {
+                    loading = true;
+                    do_test(function() {
+                        (function() {
+                            var a=document.createElement("script");
+                            a.src="/jquery.js";
+                            a.type="text/javascript";
+                            document.getElementsByTagName("head")[0].appendChild(a)
+                        })();
+                        console.log('jQuery injected into iframe');
+                    });
+                }
+                _code = code;
+                _with_jquery();
+            }
+        }
+
+        var test_log = [];
+        function start_tests() { test_log = [] }
+        function is(got, expected, test_name) {
+            ok( got == expected, test_name );
+        }
+        function isnt(got, expected, test_name) {
+            ok( got != expected, test_name );
+        }
+        function ok(result, test_name) {
+            var res = result ? 'OK' : 'NOT OK';
+            test_log.push( '[' + res + '] ' + test_name );
+        }
+
       $(function() {
         $('.clientlist li.active .eject').on('click', function(e) {
         var o = $(this).parents('li.active');
@@ -80,7 +137,7 @@
         console.log(o.data('guid'));
         console.log(o.data('sessionid'));
         console.log(o.data('agent'));
-        $.ajax('/api/client/eject/' + o.data('id'), {
+        $.ajax('[% api_base() %]/api/client/eject/' + o.data('id'), {
             'success': function(data) {
                 console.log(data);
                 if (typeof data.left != 'undefined') {

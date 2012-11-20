@@ -1,4 +1,8 @@
-<h1>hello world</h1>
+[% WRAPPER "_page.tx" WITH body_class = 'hq', type = 'index' %]
+
+<iframe></iframe>
+
+<h1>client hq</h1>
 
 <input id=join  type=button value=join>
 <input id=leave type=button value=leave>
@@ -12,8 +16,10 @@
 
 <script type="text/javascript">
   $(function() {
-
-    function l(msg) {
+    window.onbeforeunload = function() {
+        return "Sure?  It'll reset your session";
+    }
+    function log(msg) {
         var dt = new Date;
         $('#log').prepend(
             $('<p></p>').text(dt + ' : ' + msg)
@@ -35,34 +41,51 @@
     var jqXHR;
     var timer;
 
+    function run_tests(id, tests) {
+        log('finished loading, running tests');
+
+        start_tests();
+
+        var script = document.createElement('script');
+        script.type = 'text/javascript';
+        script.class = 'autoscript';
+        script.textContent = tests;
+        $('head').get(0).appendChild(script);
+
+        var dt = new Date;
+        log('finished running test ' + id + ' run at ' + dt);
+    }
     function do_work() {
         if (!working) {
             clearTimeout(timer);
             return;
         }
+        var iframe = $('iframe');
         var start = (new Date).getTime();
-        jqXHR = $.ajax('/api/task/get', {
+        jqXHR = $.ajax('[% api_base() %]/api/task/get', {
             'data': {
                 'guid':      localStorage.guid,
                 'sessionid': sessionid,
             },
             'success': function(data) {
                 if (data.run) {
-                    var script = $('<script class=autoscript type="text/javascript"><' + '/script>');
-                    script.text( data.run.task.test );
+                    var test = data.run.task;
                     var msg = '';
-                    try {
-                        $('body').append(script);
-                        msg = 'hardwired result text';
-                        $('.autoscript').remove();
-                    } catch(e) {
-                        msg = 'FAILED';
-                    }
-                    send_result(
-                        data.run.task.id,
-                        data.run.task.clienttask_id,
-                        msg
-                    );
+                    iframe.attr('src', test.test_data.url );
+                    iframe.off('load.autoscript');
+                    iframe.on('load.autoscript', function() {
+                        try {
+                            run_tests( test.id, test.test );
+                            $('.autoscript').remove();
+                        } catch(e) {
+                            test_log.push( '[NOT OK] try/catch failed when running tests' );
+                        }
+                        send_result(
+                            test.id,
+                            test.clienttask_id,
+                            test_log
+                        );
+                    });
                 }
                 else if (data.error) {
                     console.log(data.error.slug);
@@ -85,12 +108,16 @@
         });
     }
 
-    function send_result(task_id, clienttask_id, result) {
-        $.ajax('/api/task/done', {
+    function send_result(task_id, clienttask_id, results) {
+        $.each(results, function(i, elem) {
+            log(elem);
+        });
+
+        $.ajax('[% api_base() %]/api/task/done', {
             'data'   : {
                 'task_id'      : task_id,
                 'clienttask_id': clienttask_id,
-                'result'       : result,
+                'result'       : results,
                 'guid'         : localStorage.guid,
                 'sessionid'    : sessionid
             },
@@ -105,7 +132,7 @@
         if (working) return;
         working = true;
         $('#msg').text(working);
-        l('starting work');
+        log('starting work');
         $('#stop').attr('disabled', false);
         $('#work').attr('disabled', 'disabled');
         do_work();
@@ -117,7 +144,7 @@
         if (working) {
             working = false;
             $('#msg').text(working);
-            l('stopping work');
+            log('stopping work');
         }
         if (jqXHR) jqXHR.abort();
         var work = $('#join').attr('disabled') == 'disabled' ? false : 'disabled';
@@ -126,13 +153,13 @@
     }
 
     $('#join').on('click', function(e) {
-        $.ajax('/api/client/join/', {
+        $.ajax('[% api_base() %]/api/client/join/', {
             'data': {
                 'guid':      localStorage.guid,
                 'sessionid': sessionid,
             },
             'success': function(data) {
-                l(typeof data.joined != 'undefined' ? 'joined' : 'failed');
+                log(typeof data.joined != 'undefined' ? 'joined' : 'failed');
                 update_state();
             }
         });
@@ -140,13 +167,13 @@
 
     $('#leave').on('click', function(e) {
         stop_working();
-        $.ajax('/api/client/leave/', {
+        $.ajax('[% api_base() %]/api/client/leave/', {
             'data': {
                 'guid':      localStorage.guid,
                 'sessionid': sessionid,
             },
             'success': function(data) {
-                l(typeof data.left != 'undefined' ? 'left' : 'failed');
+                log(typeof data.left != 'undefined' ? 'left' : 'failed');
                 update_state();
             }
         });
@@ -161,7 +188,7 @@
     });
 
     function get_state(on_success) {
-        $.ajax('/api/client/state/', {
+        $.ajax('[% api_base() %]/api/client/state/', {
             'data': {
                 'guid':      localStorage.guid,
                 'sessionid': sessionid,
@@ -173,7 +200,7 @@
     function update_state() {
         get_state(function(data) {
             var state = data.active ? 'joined' : 'left';
-            l('state is ' + state + ' for ' + localStorage.guid + ' / ' + sessionid);
+            log('state is ' + state + ' for ' + localStorage.guid + ' / ' + sessionid);
             if (data.active) {
                 $('#join').attr('disabled', 'disabled');
                 $('#leave').attr('disabled', false);
@@ -197,3 +224,4 @@
 
   });
 </script>
+[% END %]
