@@ -14,11 +14,11 @@ __PACKAGE__->add_columns(
   started_at  => { data_type => 'bigint', inflate_datetime => 1 },
   finished_at => { data_type => 'bigint', inflate_datetime => 1 },
   state       => { data_type => 'text', is_nullable => 0, default_value => 'pending' },
-  result      => { data_type => 'text' },
 );
 __PACKAGE__->set_primary_key("id");
 
 __PACKAGE__->belongs_to(task   => 'Vulture::Schema::Result::Task',   'task_id');
 __PACKAGE__->belongs_to(client => 'Vulture::Schema::Result::Client', 'client_id');
+__PACKAGE__->has_many(results  => 'Vulture::Schema::Result::ClientTaskResult', 'client_task_id');
 
 1;

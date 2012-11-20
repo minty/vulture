@@ -116,6 +116,20 @@
                 _with_jquery();
             }
         }
+
+        var test_log = [];
+        function start_tests() { test_log = [] }
+        function is(got, expected, test_name) {
+            ok( got == expected, test_name );
+        }
+        function isnt(got, expected, test_name) {
+            ok( got != expected, test_name );
+        }
+        function ok(result, test_name) {
+            var res = result ? 'OK' : 'NOT OK';
+            test_log.push( '[' + res + '] ' + test_name );
+        }
+
       $(function() {
         $('.clientlist li.active .eject').on('click', function(e) {
         var o = $(this).parents('li.active');

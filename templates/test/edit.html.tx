@@ -25,6 +25,7 @@
     function run_tests() {
         var id     = $('input[name="id"]').val();
         var tests  = $('textarea');
+        start_tests();
         var script = document.createElement('script');
         script.type = 'text/javascript';
         script.class = 'autoscript';
@@ -34,6 +35,9 @@
         $('#console')
             .text(id + ' run at ' + dt)
             .fadeIn();
+        $.each(test_log, function(i, elem) {
+            l(elem);
+        });
     }
   $(function() {
     var save_btn = $('input[value="save"]');

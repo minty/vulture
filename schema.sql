@@ -33,8 +33,13 @@ CREATE TABLE client_task (
     created_at  INTEGER NOT NULL,
     started_at  INTEGER,
     finished_at INTEGER,
-    state       CHAR(10) NOT NULL default 'pending',
-    result      TEXT
+    state       CHAR(10) NOT NULL default 'pending'
+);
+DROP TABLE IF EXISTS client_task_result;
+CREATE TABLE client_task_result (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    client_task_id  INTEGER NOT NULL,
+    result          TEXT NOT NULL DEFAULT ''
 );
 DROP TABLE IF EXISTS test;
 CREATE TABLE test (

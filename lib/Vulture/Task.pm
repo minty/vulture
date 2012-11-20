@@ -150,8 +150,13 @@ sub done {
     $clienttask->update({
         state       => 'complete',
         finished_at => time,
-        result      => $self->param('result') || '' }
-    );
+    });
+    for my $result ($self->param('result[]')) {
+        $self->rs('ClientTaskResult')->create({
+            client_task_id => $clienttask->id,
+            result         => $result,
+        });
+    }
 
     # If all clienttasks for the current task are now 'complete'
     # then update $task->state == complete
