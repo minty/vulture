@@ -144,16 +144,69 @@
         var task_id;
         var job_id;
 
-        function clear_log() { task_log = [] }
+        function clear_log()   { task_log = [] }
+        function diag(message) { task_log.push( '# ' + message ) }
+        function pass(test_name) { ok(true, test_name) }
+        function fail(test_name) { ok(false, test_name) }
+        function ok(result, test_name) {
+            var res = result ? 'ok' : 'not ok';
+            task_log.push( res + ' ' + test_name );
+        }
         function is(got, expected, test_name) {
             ok( got == expected, test_name );
+            if (got == expected) return;
+            diag('Got: ' + got);
+            diag('Expected: ' + expected);
         }
         function isnt(got, expected, test_name) {
             ok( got != expected, test_name );
+            if (got != expected) return;
+            diag('Expecting not to get: ' + got);
         }
-        function ok(result, test_name) {
-            var res = result ? 'OK' : 'NOT OK';
-            task_log.push( '[' + res + '] ' + test_name );
+        function like(got, expected_regex, test_name) {
+            var res = expected_regex.test( got );
+            ok(res, test_name);
+            if (res) return;
+            diag('Got: ' + got);
+            diag('Expecting: ' + expected_regex);
+        }
+        function unlike(got, expected_regex, test_name) {
+            var res = !expected_regex.test( got );
+            ok(res, test_name);
+            if (res) return;
+            diag('Got: ' + got);
+            diag('Expecting not to match: ' + expected_regex);
+        }
+        function hasClass(selector, class_name, test_name) {
+            var iframe = $('iframe');
+            var target = $( iframe.get(0).contentWindow.document );
+            var nodes = target.find(selector);
+            if (nodes.length == 0) {
+                diag('No matching nodes found for selector: ' + selector);
+                fail(test_name);
+                return;
+            }
+            if (nodes.length == 1) {
+                ok(nodes.hasClass(class_name), test_name);
+            } else {
+                diag('Multiple nodes match');
+                var match = 0;
+                nodes.each(function(i, e) {
+                    if ($(e).hasClass(class_name)) match = match + 1;
+                });
+                if (match == nodes.length) {
+                    diag('All have the selector');
+                    pass(test_name);
+                }
+                if (match == 0) {
+                    diag('None have the selector');
+                    fail(test_name);
+                }
+                else {
+                    diag(match + ' of ' + nodes.length + ' matching nodes have the selector');
+                    fail(test_name);
+                }
+            }
         }
 
       $(function() {
