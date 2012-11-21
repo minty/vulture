@@ -105,9 +105,9 @@
         {
             var _code;
             var loading = false;
-            function _with_jquery() {
+            function _using() {
                 if (typeof $('iframe').get(0).contentWindow.jQuery == 'undefined') {
-                    setTimeout('_with_jquery()', 100);
+                    setTimeout('_using()', 100);
                     return;
                 }
                 else {
@@ -115,7 +115,11 @@
                     _code();
                 }
             }
-            function with_jquery(code) {
+            function using(library, code) {
+                if (library != 'jquery') {
+                    alert('Invalid library ' + library + ' passed to using()');
+                    return;
+                }
                 if (!loading && typeof $('iframe').get(0).contentWindow.jQuery == 'undefined') {
                     loading = true;
                     work(function() {
@@ -129,7 +133,7 @@
                     });
                 }
                 _code = code;
-                _with_jquery();
+                _using();
             }
         }
 
