@@ -111,6 +111,7 @@
                     return;
                 }
                 else {
+                    loading = false;
                     _code();
                 }
             }
