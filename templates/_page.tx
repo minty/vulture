@@ -83,7 +83,7 @@
         }
         /* This would be called from a specific task.  It's passed a function
          * ref, that we want to inject and run in the scope of the iframe */
-        function do_task(func) {
+        function work(func) {
             var script = document.createElement('script');
             script.type = 'text/javascript';
             script.class = 'autoscript';
@@ -93,7 +93,7 @@
             var frame_head = $('head',target).get(0);
             frame_head.appendChild(script);
 
-            // Update the server with results so far, once per do_task() call.
+            // Update the server with results so far, once per work() call.
             // Defined in hq.html.tx
             send_result(
                 'update',
@@ -118,7 +118,7 @@
             function with_jquery(code) {
                 if (!loading && typeof $('iframe').get(0).contentWindow.jQuery == 'undefined') {
                     loading = true;
-                    do_task(function() {
+                    work(function() {
                         (function() {
                             var a=document.createElement("script");
                             a.src="/jquery.js";

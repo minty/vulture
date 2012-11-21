@@ -2,7 +2,7 @@ var dt = new Date;
 
 $('#log').prepend( $('<p></p>').text('xbefore ' + dt) );
 
-do_test(function() {
+work(function() {
   $('#right-col').toggle();
   alert(1);
 });
