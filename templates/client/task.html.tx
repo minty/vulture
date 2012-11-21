@@ -9,8 +9,12 @@
   <ul class=clientlist>
   [% FOR ct IN array( task.client_tasks ) %]
     <li><ul>
-      <li>[% ct.state %] : [% ct.result %]</li>
-      <li>[% ct.client.ip %] using [% ct.client.agent %]</li>
+      <li>[% ct.state %] for [% ct.client.ip %] using [% ct.client.agent %]</li>
+      <ul>
+      [% FOR res IN array( ct.results ) %]
+        <li>[% res.result %]</li>
+      [% END %]
+      </ul>
     </ul></li>
   [% END %]
   </ul>

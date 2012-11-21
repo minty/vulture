@@ -15,15 +15,42 @@
 <div id=log></div>
 
 <script type="text/javascript">
-  $(function() {
+    var sessionid = GUID();
+    var working = false;
+    var jqXHR;
+    var timer;
+
+    function send_result(state, task_id, clienttask_id) {
+
+        var results = test_log;
+        clear_log();
+
+        $.each(results, function(i, elem) {
+            log(elem);
+        });
+
+
+        if (state != 'update') state = 'done';
+
+
+        $.ajax('[% api_base() %]/api/task/' + state, {
+            'data'   : {
+                'task_id'      : task_id,
+                'clienttask_id': clienttask_id,
+                'result'       : results,
+                'guid'         : localStorage.guid,
+                'sessionid'    : sessionid
+            },
+            'success': function(data) {
+                if (state == 'done') {
+                    $('.autoscript').remove();
+                    do_work();
+                }
+            }
+        });
+    }
     window.onbeforeunload = function() {
         return "Sure?  It'll reset your session";
-    }
-    function log(msg) {
-        var dt = new Date;
-        $('#log').prepend(
-            $('<p></p>').text(dt + ' : ' + msg)
-        );
     }
 
     function GUID () {
@@ -35,26 +62,6 @@
         return (S4() + S4() + '-' + S4() + S4() + '-' + S4() + S4());
     }
     if (!localStorage.guid) localStorage.guid = GUID();
-    var sessionid = GUID();
-
-    var working = false;
-    var jqXHR;
-    var timer;
-
-    function run_tests(id, tests) {
-        log('finished loading, running tests');
-
-        clear_log();
-
-        var script = document.createElement('script');
-        script.type = 'text/javascript';
-        script.class = 'autoscript';
-        script.textContent = tests;
-        $('head').get(0).appendChild(script);
-
-        var dt = new Date;
-        log('finished running test ' + id + ' run at ' + dt);
-    }
     function do_work() {
         if (!working) {
             clearTimeout(timer);
@@ -110,6 +117,21 @@
             }
         });
     }
+    function run_tests(id, tests) {
+        log('finished loading, running tests');
+
+        clear_log();
+
+        var script = document.createElement('script');
+        script.type = 'text/javascript';
+        script.class = 'autoscript';
+        script.textContent = tests;
+        $('head').get(0).appendChild(script);
+
+        var dt = new Date;
+        log('finished running test ' + id + ' run at ' + dt);
+    }
+  $(function() {
 
     $('#work').on('click', function(e) {
         if (working) return;

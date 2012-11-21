@@ -75,6 +75,12 @@
     <script type="text/javascript" src="/jquery.js"></script>
     <script type="text/javascript">
         function l(m) { console.log(m) }
+        function log(msg) {
+            var dt = new Date;
+            $('#log').prepend(
+                $('<p></p>').text(dt + ' : ' + msg)
+            );
+        }
         /* This would be called from a specific test.  It's passed a function
          * ref, that we want to inject and run in the scope of the iframe */
         function do_test(func) {
@@ -88,10 +94,11 @@
             frame_head.appendChild(script);
 
             // Update the server with results so far, once per do_test() call.
+            // Defined in hq.html.tx
             send_result(
                 'update',
-                test.id,
-                test.clienttask_id,
+                test_id,
+                clienttask_id,
                 test_log
             );
         }
@@ -128,33 +135,6 @@
         var test_log = [];
         var test_id;
         var clienttask_id;
-
-        function send_result(state, task_id, clienttask_id) {
-            $.each(results, function(i, elem) {
-                log(elem);
-            });
-
-            if (state != 'update') state = 'done';
-
-            var results = test_log;
-            clear_log();
-
-            $.ajax('[% api_base() %]/api/task/' + state, {
-                'data'   : {
-                    'task_id'      : task_id,
-                    'clienttask_id': clienttask_id,
-                    'result'       : results,
-                    'guid'         : localStorage.guid,
-                    'sessionid'    : sessionid
-                },
-                'success': function(data) {
-                    if (state == 'done') {
-                        $('.autoscript').remove();
-                        do_work();
-                    }
-                }
-            });
-        }
 
         function clear_log() { test_log = [] }
         function is(got, expected, test_name) {
