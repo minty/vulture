@@ -1,5 +1,5 @@
 [% WRAPPER "_page.tx" WITH body_class = 'run', type = 'index' %]
-  <h1><a href="[% api_base() %]/run/list/all">Tun [% run.id %] to run test [% run.test_id %]</a></h1>
+  <h1><a href="[% api_base() %]/run/list/all">Run [% run.id %] to run task [% run.task_id %]</a></h1>
   <ul>
     <li>Created at [% run.created_at %]</li>
     [% IF run.started_at %]<li>Started at [% run.started_at %]</li>[% END %]

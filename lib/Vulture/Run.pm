@@ -110,7 +110,7 @@ sub on_timer_finish {
         if !$job;
     my $run = $self->rsfind(Run => $job->run_id)
         or return $self->to_json({ retry => 1 });
-    my $file = $self->filepath('/tests/' . $run->test_id);
+    my $file = $self->filepath('/tasks/' . $run->task_id);
 
     return $self->render_not_found
         if !-e $file->stringify;
@@ -128,8 +128,8 @@ sub on_timer_finish {
     return $self->to_json({ run => { run => {
         id        => $run->id,
         job_id    => $job->id,
-        test      => scalar $file->slurp,
-        test_data => $self->json->decode( scalar slurp "$path.json" ),
+        task      => scalar $file->slurp,
+        task_data => $self->json->decode( scalar slurp "$path.json" ),
     } } });
 }
 
@@ -197,7 +197,7 @@ sub run {
         if $id !~ /\A[0-9]+\z/;
 
     my $data = {
-        test_id    => $id,
+        task_id    => $id,
         created_at => time,
         state      => 'pending',
     };

@@ -4,7 +4,7 @@
   <ul class=clientlist>
     [% WHILE (run = runs.next) %]
       <li><ul>
-        <li>Test [% run.test_id %] <small>(run id [% run.id %])</small></li>
+        <li>Task [% run.task_id %] <small>(run id [% run.id %])</small></li>
         <li>State is [% run.state %], has
           <a href="[% api_base() %]/client/run/[% run.id %]">[% run.jobs.count %] jobs</a></li>
         <li>Created at [% run.created_at %]</li>

@@ -1,12 +1,12 @@
-[% WRAPPER "_page.tx" WITH body_class = 'testedit', type = 'index' %]
+[% WRAPPER "_page.tx" WITH body_class = 'taskedit', type = 'index' %]
 
-<iframe src="[% test_data.url |html %]"></iframe>
+<iframe src="[% task_data.url |html %]"></iframe>
 
-<h1>Edit test</h1>
+<h1>Edit task</h1>
 
 <input type=hidden name=id value="[% id %]">
 <div>
-  test url: <input type=text name=url value="[% test_data.url |html %]">
+  task url: <input type=text name=url value="[% task_data.url |html %]">
   [launch tester client]
   </div>
 
@@ -17,15 +17,15 @@
 <span id=console></span>
 </p>
 
-<textarea name=test rows=20 cols=70>[% test %]</textarea>
+<textarea name=task rows=20 cols=70>[% task %]</textarea>
 
 <div id=log></div>
 
 <script type="text/javascript">
-    function run_tests() {
+    function run_task() {
         var id     = $('input[name="id"]').val();
         var tests  = $('textarea');
-        start_tests();
+        clear_log();
         var script = document.createElement('script');
         script.type = 'text/javascript';
         script.class = 'autoscript';
@@ -35,7 +35,7 @@
         $('#console')
             .text(id + ' run at ' + dt)
             .fadeIn();
-        $.each(test_log, function(i, elem) {
+        $.each(task_log, function(i, elem) {
             l(elem);
         });
     }
@@ -49,7 +49,7 @@
 
         var url = $('input[name="url"]').val();
         l( "Loading " + url );
-        run_tests();
+        run_task();
         run_btn.val('run');
     });
     lar_btn.on('click', function(e) {
@@ -67,7 +67,7 @@
             .off('load.autoscript')
             .on('load.autoscript', function() {
                 lar_btn.val('running');
-                run_tests();
+                run_task();
                 lar_btn.val('load & run');
             });
     });
@@ -84,9 +84,9 @@
         console.log(url);
         console.log(js);
 
-        $.ajax('[% api_base() %]/api/test/save/' + id, {
+        $.ajax('[% api_base() %]/api/task/save/' + id, {
             'data': {
-                'test_js': js,
+                'task_js': js,
                 'url'    : url,
             },
             'success': function(data) {
@@ -97,7 +97,7 @@
                 save_btn.val('save');
             },
             'error': function(xhr, status) {
-                console.log('error saving test ' + id + ' ' + status);
+                console.log('error saving task ' + id + ' ' + status);
             }
         });
     });

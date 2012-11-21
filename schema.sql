@@ -18,7 +18,7 @@ CREATE TABLE client (
 DROP TABLE IF EXISTS run;
 CREATE TABLE run (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    test_id     INTEGER NOT NULL,
+    task_id     INTEGER NOT NULL,
     created_at  INTEGER NOT NULL,
     started_at  INTEGER,
     finished_at INTEGER,
@@ -41,7 +41,7 @@ CREATE TABLE job_result (
     job_id          INTEGER NOT NULL,
     result          TEXT NOT NULL DEFAULT ''
 );
-DROP TABLE IF EXISTS test;
-CREATE TABLE test (
+DROP TABLE IF EXISTS task;
+CREATE TABLE task (
     id INTEGER PRIMARY KEY AUTOINCREMENT
 );

@@ -1,14 +1,14 @@
-package Vulture::Schema::Result::Test;
+package Vulture::Schema::Result::Task;
 
 use base 'DBIx::Class::Core';
 use utf8;
 use common::sense;
 
-# minimally brief, as we store test data in the filesystem.
+# minimally brief, as we store task data in the filesystem.
 # it's your code : it wants vcs'ing.
 # this table exists to generate unique ids.
 
-__PACKAGE__->table('test');
+__PACKAGE__->table('task');
 __PACKAGE__->add_columns(
   id => { data_type => 'int', is_nullable => 0, is_auto_increment => 1 },
 );

@@ -54,7 +54,7 @@
         color: #ccc;
       }
       .hq iframe,
-      .testedit iframe {
+      .taskedit iframe {
         position: absolute;
         right: 0;
         top: 0;
@@ -62,8 +62,8 @@
         width: 800px;
         height: 100%;
       }
-      .testedit input[name="id"],
-      .testedit input[name="url"] {
+      .taskedit input[name="id"],
+      .taskedit input[name="url"] {
         width: 30em;
       }
       #console {
@@ -81,9 +81,9 @@
                 $('<p></p>').text(dt + ' : ' + msg)
             );
         }
-        /* This would be called from a specific test.  It's passed a function
+        /* This would be called from a specific task.  It's passed a function
          * ref, that we want to inject and run in the scope of the iframe */
-        function do_test(func) {
+        function do_task(func) {
             var script = document.createElement('script');
             script.type = 'text/javascript';
             script.class = 'autoscript';
@@ -93,13 +93,13 @@
             var frame_head = $('head',target).get(0);
             frame_head.appendChild(script);
 
-            // Update the server with results so far, once per do_test() call.
+            // Update the server with results so far, once per do_task() call.
             // Defined in hq.html.tx
             send_result(
                 'update',
-                test_id,
+                task_id,
                 job_id,
-                test_log
+                task_log
             );
         }
         {
@@ -118,7 +118,7 @@
             function with_jquery(code) {
                 if (!loading && typeof $('iframe').get(0).contentWindow.jQuery == 'undefined') {
                     loading = true;
-                    do_test(function() {
+                    do_task(function() {
                         (function() {
                             var a=document.createElement("script");
                             a.src="/jquery.js";
@@ -133,11 +133,11 @@
             }
         }
 
-        var test_log = [];
-        var test_id;
+        var task_log = [];
+        var task_id;
         var job_id;
 
-        function clear_log() { test_log = [] }
+        function clear_log() { task_log = [] }
         function is(got, expected, test_name) {
             ok( got == expected, test_name );
         }
@@ -146,7 +146,7 @@
         }
         function ok(result, test_name) {
             var res = result ? 'OK' : 'NOT OK';
-            test_log.push( '[' + res + '] ' + test_name );
+            task_log.push( '[' + res + '] ' + test_name );
         }
 
       $(function() {

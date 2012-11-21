@@ -182,12 +182,12 @@ sub startup {
     $r->get("$base/ip/show")
         ->to(controller => 'ip', action => 'show');
 
-    $r->get("$base/test/edit/")
-        ->to(controller => 'test', action => 'edit');
-    $r->get("$base/test/edit/:test_id")
-        ->to(controller => 'test', action => 'edit');
-    $r->get("$base/api/test/save/:test_id")
-        ->to(controller => 'test', action => 'save');
+    $r->get("$base/task/edit/")
+        ->to(controller => 'task', action => 'edit');
+    $r->get("$base/task/edit/:task_id")
+        ->to(controller => 'task', action => 'edit');
+    $r->get("$base/api/task/save/:task_id")
+        ->to(controller => 'task', action => 'save');
 
     # $r->get('/(*everything)' )->to('mycontroller#aliases');
     # /usr/local/share/perl/5.10.1/Mojo/Message/Request.pm

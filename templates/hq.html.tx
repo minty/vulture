@@ -22,7 +22,7 @@
 
     function send_result(state, run_id, job_id) {
 
-        var results = test_log;
+        var results = task_log;
         clear_log();
 
         $.each(results, function(i, elem) {
@@ -76,24 +76,24 @@
             },
             'success': function(data) {
                 if (data.run) {
-                    var test = data.run.run;
+                    var task = data.run.run;
                     var msg = '';
-                    iframe.attr('src', test.test_data.url );
+                    iframe.attr('src', task.task_data.url );
                     iframe.off('load.autoscript');
                     iframe.on('load.autoscript', function() {
-                        test_id = test.id;
-                        job_id  = test.job_id;
+                        task_id = task.id;
+                        job_id  = task.job_id;
                         try {
-                            run_tests( test.id, test.test );
+                            run_task( task.id, task.task );
                             $('.autoscript').remove();
                         } catch(e) {
-                            test_log.push( '[NOT OK] try/catch failed when running tests' );
+                            task_log.push( '[NOT OK] try/catch failed when running task' );
                         }
                         send_result(
                             'done',
-                            test.id,
-                            test.job_id,
-                            test_log
+                            task.id,
+                            task.job_id,
+                            task_log
                         );
                     });
                 }
@@ -117,8 +117,8 @@
             }
         });
     }
-    function run_tests(id, tests) {
-        log('finished loading, running tests');
+    function run_task(id, tests) {
+        log('finished loading, running task');
 
         clear_log();
 
@@ -129,7 +129,7 @@
         $('head').get(0).appendChild(script);
 
         var dt = new Date;
-        log('finished running test ' + id + ' run at ' + dt);
+        log('finished running task ' + id + ' run at ' + dt);
     }
   $(function() {
 
