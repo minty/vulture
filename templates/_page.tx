@@ -94,13 +94,16 @@
             frame_head.appendChild(script);
 
             // Update the server with results so far, once per work() call.
-            // Defined in hq.html.tx
-            send_result(
-                'update',
-                task_id,
-                job_id,
-                task_log
-            );
+            // Defined in hq.html.tx.  Thus if we're called from task/edit,
+            // send_result won't be defined.
+            if (typeof send_result != 'undefined') {
+                send_result(
+                    'update',
+                    task_id,
+                    job_id,
+                    task_log
+                );
+            }
         }
         {
             var _code;
