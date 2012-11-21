@@ -136,6 +136,15 @@ sub on_timer_finish {
 #get '/api/task/done' => sub {
 sub done {
     my ($self) = @_;
+    $self->log_task('complete');
+}
+#get '/api/task/update' => sub {
+sub update {
+    my ($self) = @_;
+    $self->log_task('update');
+}
+sub log_task {
+    my ($self, $state) = @_;
 
     my $clienttask_id = $self->param('clienttask_id')
         or return $self->to_json({ error => { slug => 'missing clienttask id' } });
@@ -147,16 +156,20 @@ sub done {
             { error => { slug => 'Bad client' } },
          );
 
-    $clienttask->update({
-        state       => 'complete',
-        finished_at => time,
-    });
     for my $result ($self->param('result[]')) {
         $self->rs('ClientTaskResult')->create({
             client_task_id => $clienttask->id,
             result         => $result,
         });
     }
+
+    return $self->to_json({ thankyou => { slug => "clienttask id $clienttask_id updated" } })
+        if $state ne 'complete';
+
+    $clienttask->update({
+        state       => 'complete',
+        finished_at => time,
+    });
 
     # If all clienttasks for the current task are now 'complete'
     # then update $task->state == complete

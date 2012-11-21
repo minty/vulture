@@ -86,6 +86,14 @@
             var target = $( iframe.get(0).contentWindow.document );
             var frame_head = $('head',target).get(0);
             frame_head.appendChild(script);
+
+            // Update the server with results so far, once per do_test() call.
+            send_result(
+                'update',
+                test.id,
+                test.clienttask_id,
+                test_log
+            );
         }
         {
             var _code;
@@ -118,7 +126,37 @@
         }
 
         var test_log = [];
-        function start_tests() { test_log = [] }
+        var test_id;
+        var clienttask_id;
+
+        function send_result(state, task_id, clienttask_id) {
+            $.each(results, function(i, elem) {
+                log(elem);
+            });
+
+            if (state != 'update') state = 'done';
+
+            var results = test_log;
+            clear_log();
+
+            $.ajax('[% api_base() %]/api/task/' + state, {
+                'data'   : {
+                    'task_id'      : task_id,
+                    'clienttask_id': clienttask_id,
+                    'result'       : results,
+                    'guid'         : localStorage.guid,
+                    'sessionid'    : sessionid
+                },
+                'success': function(data) {
+                    if (state == 'done') {
+                        $('.autoscript').remove();
+                        do_work();
+                    }
+                }
+            });
+        }
+
+        function clear_log() { test_log = [] }
         function is(got, expected, test_name) {
             ok( got == expected, test_name );
         }

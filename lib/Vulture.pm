@@ -151,6 +151,8 @@ sub startup {
         ->to(controller => 'task', action => 'get');
     $r->get("$base/api/task/done")
         ->to(controller => 'task', action => 'done');
+    $r->get("$base/api/task/update")
+        ->to(controller => 'task', action => 'update');
 
     $r->get("$base/api/run/:id")
         ->to(controller => 'task', action => 'run');

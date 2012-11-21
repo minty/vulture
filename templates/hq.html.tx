@@ -44,7 +44,7 @@
     function run_tests(id, tests) {
         log('finished loading, running tests');
 
-        start_tests();
+        clear_log();
 
         var script = document.createElement('script');
         script.type = 'text/javascript';
@@ -74,6 +74,8 @@
                     iframe.attr('src', test.test_data.url );
                     iframe.off('load.autoscript');
                     iframe.on('load.autoscript', function() {
+                        test_id       = test.id;
+                        clienttask_id = test.clienttask_id;
                         try {
                             run_tests( test.id, test.test );
                             $('.autoscript').remove();
@@ -81,6 +83,7 @@
                             test_log.push( '[NOT OK] try/catch failed when running tests' );
                         }
                         send_result(
+                            'done',
                             test.id,
                             test.clienttask_id,
                             test_log
@@ -104,26 +107,6 @@
             'error': function(jqXHR, textStatus) {
                 clearTimeout(timer);
                 timer = setTimeout(do_work, 60000);
-            }
-        });
-    }
-
-    function send_result(task_id, clienttask_id, results) {
-        $.each(results, function(i, elem) {
-            log(elem);
-        });
-
-        $.ajax('[% api_base() %]/api/task/done', {
-            'data'   : {
-                'task_id'      : task_id,
-                'clienttask_id': clienttask_id,
-                'result'       : results,
-                'guid'         : localStorage.guid,
-                'sessionid'    : sessionid
-            },
-            'success': function(data) {
-                $('.autoscript').remove();
-                do_work();
             }
         });
     }
