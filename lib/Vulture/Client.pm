@@ -124,17 +124,17 @@ sub eject {
     return $self->to_json({ left => $self->client_hash($client) });
 }
 
-sub task {
+sub run {
     my ($self) = @_;
 
-    my $task_id = $self->param('task_id')
-        or return $self->to_json({ error => { slug => 'No task id' } });
-    my $task = $self->rsfind(Task => $task_id)
-        or return $self->to_json({ error => { slug => 'Bad task id' } });
+    my $run_id = $self->param('run_id')
+        or return $self->to_json({ error => { slug => 'No run id' } });
+    my $run = $self->rsfind(Run => $run_id)
+        or return $self->to_json({ error => { slug => 'Bad run id' } });
     $self->stash(
-        task => $task,
+        run => $run,
     );
-    return $self->render(template => 'client/task');
+    return $self->render(template => 'client/run');
 }
 
 1;

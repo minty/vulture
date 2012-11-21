@@ -1,0 +1,21 @@
+[% WRAPPER "_page.tx" WITH body_class = 'run', type = 'index' %]
+  <h1><a href="[% api_base() %]/run/list/all">Tun [% run.id %] to run test [% run.test_id %]</a></h1>
+  <ul>
+    <li>Created at [% run.created_at %]</li>
+    [% IF run.started_at %]<li>Started at [% run.started_at %]</li>[% END %]
+    [% IF run.finished_at %]<li>Finished at [% run.finished_at %]</li>[% END %]
+  </ul>
+  <hr>
+  <ul class=clientlist>
+  [% FOR ct IN array( run.jobs ) %]
+    <li><ul>
+      <li>[% ct.state %] for [% ct.client.ip %] using [% ct.client.agent %]</li>
+      <ul>
+      [% FOR res IN array( ct.results ) %]
+        <li>[% res.result %]</li>
+      [% END %]
+      </ul>
+    </ul></li>
+  [% END %]
+  </ul>
+[% END %]

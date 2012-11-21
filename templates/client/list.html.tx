@@ -16,11 +16,11 @@
       <li>last seen [% client.last_seen %]</li>
       <li>app/client id [% client.app_id %] / [% client.client_id %]</li>
       <li>
-        [% client.tasks.count %] tasks,
-        [% client.tasks.search({ state => 'pending' }).count %] pending
-        [% client.tasks.search({ state => 'running' }).count %] running
-        [% client.tasks.search({ state => 'orphaned' }).count %] orphaned
-        [% client.tasks.search({ state => 'complete' }).count %] completed
+        [% client.jobs.count %] jobs,
+        [% client.jobs.search({ state => 'pending' }).count %] pending
+        [% client.jobs.search({ state => 'running' }).count %] running
+        [% client.jobs.search({ state => 'orphaned' }).count %] orphaned
+        [% client.jobs.search({ state => 'complete' }).count %] completed
       </li>
       <li>
         <a href="[% api_base() %]/client/about/[% client.id %]">about</a>[%

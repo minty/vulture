@@ -79,9 +79,9 @@ sub startup {
         return $self->to_json([ map { $_ } $rs->all ]);
     });
 
-    $self->helper(active_tasks => sub {
+    $self->helper(active_runs => sub {
         my ($self, $state) = @_;
-        return $self->rs('Task')->search_rs({
+        return $self->rs('Run')->search_rs({
             state => $state
         }, {
             order_by => { -desc => 'created_at' },
@@ -124,7 +124,7 @@ sub startup {
     $self->secret('Took a long time to hatch');
 
     # Auto disconnect any client not seen for 300 seconds.
-    # (calling /api/get/task updates last_seen)
+    # (calling /api/get/run updates last_seen)
     Mojo::IOLoop->recurring(60 => sub {
         my $now     = DateTime->now;
         my $clients = $self->rs('Client')->search({
@@ -139,24 +139,24 @@ sub startup {
     my $r    = $self->routes;
     my $base = $self->config->{base_path} || '';
 
-    $r->get("$base/task/list/:state")
-        ->to(controller => 'task', action => 'list');
-    $r->get("$base/api/task/list/:state")
-        ->to(controller => 'task', action => 'api_list');
-    $r->get("$base/api/task/get")
-        ->to(controller => 'task', action => 'get');
-    $r->get("$base/api/task/done")
-        ->to(controller => 'task', action => 'done');
-    $r->get("$base/api/task/update")
-        ->to(controller => 'task', action => 'update');
+    $r->get("$base/run/list/:state")
+        ->to(controller => 'run', action => 'list');
+    $r->get("$base/api/run/list/:state")
+        ->to(controller => 'run', action => 'api_list');
+    $r->get("$base/api/run/get")
+        ->to(controller => 'run', action => 'get');
+    $r->get("$base/api/run/done")
+        ->to(controller => 'run', action => 'done');
+    $r->get("$base/api/run/update")
+        ->to(controller => 'run', action => 'update');
 
     $r->get("$base/api/run/:id")
-        ->to(controller => 'task', action => 'run');
+        ->to(controller => 'run', action => 'run');
 
     $r->get("$base/client/list")
         ->to(controller => 'client', action => 'list');
-    $r->get("$base/client/task/:task_id")
-        ->to(controller => 'client', action => 'task');
+    $r->get("$base/client/run/:run_id")
+        ->to(controller => 'client', action => 'run');
     $r->get("$base/api/client/list")
         ->to(controller => 'client', action => 'api_list');
     $r->get("$base/api/client/state")

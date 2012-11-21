@@ -4,11 +4,11 @@
       body {
         font-family: sans-serif;
       }
-      .task h1 a {
+      .run h1 a {
         text-decoration: none;
         color: 000;
       }
-      .task h1 a:hover {
+      .run h1 a:hover {
         text-decoration: underline;
       }
       #log {
@@ -98,7 +98,7 @@
             send_result(
                 'update',
                 test_id,
-                clienttask_id,
+                job_id,
                 test_log
             );
         }
@@ -135,7 +135,7 @@
 
         var test_log = [];
         var test_id;
-        var clienttask_id;
+        var job_id;
 
         function clear_log() { test_log = [] }
         function is(got, expected, test_name) {

@@ -1,4 +1,4 @@
-package Vulture::Task;
+package Vulture::Run;
 
 use Mojo::Base 'Mojolicious::Controller';
 
@@ -8,8 +8,8 @@ use Mojo::IOLoop;
 
 sub api_list {
     my ($self) = @_;
-    my $tasks = $self->active_tasks($self->param('state'));
-    $self->to_api_list($tasks);
+    my $runs = $self->active_runs($self->param('state'));
+    $self->to_api_list($runs);
 }
 
 sub list {
@@ -17,7 +17,7 @@ sub list {
 
     my $state = $self->param('state');
     if ($state eq 'all') {
-        $self->stash(states => $self->rs('Task')->search_rs({}, {
+        $self->stash(states => $self->rs('Run')->search_rs({}, {
             select   => ['state', { count => 'state' }],
             as       => [qw<state number>],
             group_by => 'state',
@@ -25,12 +25,12 @@ sub list {
         }));
     }
     else {
-        $self->stash(tasks => $self->active_tasks($self->param('state')));
+        $self->stash(runs => $self->active_runs($self->param('state')));
     }
-    return $self->render(template => 'task/list');
+    return $self->render(template => 'run/list');
 }
 
-# get '/api/task/get' => sub {
+# get '/api/run/get' => sub {
 sub get {
     my ($self) = @_;
 
@@ -40,7 +40,7 @@ sub get {
             { delay => 5 },
         );
 
-    # Don't issue new tasks if there are already ones running for this client
+    # Don't issue new runs if there are already ones running for this client
     my $existing = $self->rs('Job')->search({
         client_id => $client->id,
         state     => 'running',
@@ -48,7 +48,7 @@ sub get {
     return $self->to_json(
         { running => [ map { {
             id        => $_->id,
-            task_id   => $_->task_id,
+            run_id    => $_->run_id,
             client_id => $_->client_id,
         } } $existing->all ] },
         { delay => 3 }
@@ -61,7 +61,7 @@ sub get {
     # As soon as we find work, or after 60 seconds, return.
     # The client is then expected to re-connect.
     # Mojolicious::Guides::Cookbook#REALTIME_WEB
-    my $clienttask;
+    my $job;
     my $id;
     my $start  = time;
     my $poll   = $self->config->{long_poll} || 60;
@@ -79,7 +79,7 @@ sub get {
         my $delta = time - $start;
         my $uid = join ' / ', $client->app_id, $client->client_id;
         warn "$delta : polling db for work for $uid";
-        $clienttask = $self->rs('Job')->search({
+        $job = $self->rs('Job')->search({
             client_id => $client->id,
             state     => 'pending',
         }, {
@@ -93,24 +93,24 @@ sub get {
             if !$current_client             # client has gone away
             || !$current_client->active     # client is no longer active
             || $abort                       # stream closed (client disconnect)
-            || $clienttask                  # we found work for the client
+            || $job                         # we found work for the client
             || time - $start > $poll;       # we hit a timeout
 
         if ($finish) {
-            $self->on_timer_finish($clienttask);
+            $self->on_timer_finish($job);
             $clear->();
         }
     });
 }
 
 sub on_timer_finish {
-    my ($self, $clienttask) = @_;
+    my ($self, $job) = @_;
 
     return $self->to_json({ retry => 1 })
-        if !$clienttask;
-    my $task = $self->rsfind(Task => $clienttask->task_id)
+        if !$job;
+    my $run = $self->rsfind(Run => $job->run_id)
         or return $self->to_json({ retry => 1 });
-    my $file = $self->filepath('/tests/' . $task->test_id);
+    my $file = $self->filepath('/tests/' . $run->test_id);
 
     return $self->render_not_found
         if !-e $file->stringify;
@@ -119,37 +119,37 @@ sub on_timer_finish {
         state      => 'running',
         started_at => time,
     };
-    $task->update($data)
-        if $task->state ne 'running';
-    $clienttask->update($data);
+    $run->update($data)
+        if $run->state ne 'running';
+    $job->update($data);
 
     my $path = $file->stringify;
 
-    return $self->to_json({ run => { task => {
-        id            => $task->id,
-        clienttask_id => $clienttask->id,
-        test          => scalar $file->slurp,
-        test_data     => $self->json->decode( scalar slurp "$path.json" ),
+    return $self->to_json({ run => { run => {
+        id        => $run->id,
+        job_id    => $job->id,
+        test      => scalar $file->slurp,
+        test_data => $self->json->decode( scalar slurp "$path.json" ),
     } } });
 }
 
-#get '/api/task/done' => sub {
+#get '/api/run/done' => sub {
 sub done {
     my ($self) = @_;
-    $self->log_task('complete');
+    $self->log_run('complete');
 }
-#get '/api/task/update' => sub {
+#get '/api/run/update' => sub {
 sub update {
     my ($self) = @_;
-    $self->log_task('update');
+    $self->log_run('update');
 }
-sub log_task {
+sub log_run {
     my ($self, $state) = @_;
 
-    my $clienttask_id = $self->param('clienttask_id')
-        or return $self->to_json({ error => { slug => 'missing clienttask id' } });
-    my $clienttask = $self->rsfind(Job => $clienttask_id)
-        or return $self->to_json({ error => { slug => "cannot find clienttask $clienttask_id" } });
+    my $job_id = $self->param('job_id')
+        or return $self->to_json({ error => { slug => 'missing job id' } });
+    my $job = $self->rsfind(Job => $job_id)
+        or return $self->to_json({ error => { slug => "cannot find job $job_id" } });
 
     my $client = $self->client
         or return $self->to_json(
@@ -158,34 +158,34 @@ sub log_task {
 
     for my $result ($self->param('result[]')) {
         $self->rs('JobResult')->create({
-            job_id => $clienttask->id,
+            job_id => $job->id,
             result => $result,
         });
     }
 
-    return $self->to_json({ thankyou => { slug => "clienttask id $clienttask_id updated" } })
+    return $self->to_json({ thankyou => { slug => "job id $job_id updated" } })
         if $state ne 'complete';
 
-    $clienttask->update({
+    $job->update({
         state       => 'complete',
         finished_at => time,
     });
 
-    # If all clienttasks for the current task are now 'complete'
-    # then update $task->state == complete
+    # If all jobs for the current run are now 'complete'
+    # then update $run->state == complete
     my $jobs = $self->rs('Job')->search({
-        task_id => $clienttask->task_id
+        run_id => $job->run_id
     });
     my $total = $jobs->count;
     my $complete = $jobs->search({ state => 'complete' })->count;
     if ($total == $complete) {
-        $clienttask->task->update({
+        $job->run->update({
             state => 'complete',
             finished_at => time,
         });
     }
 
-    return $self->to_json({ thankyou => { slug => "clienttask id $clienttask_id marked as complete" } });
+    return $self->to_json({ thankyou => { slug => "job id $job_id marked as complete" } });
 };
 
 # get '/api/run/:id' => sub {
@@ -202,14 +202,14 @@ sub run {
         state      => 'pending',
     };
     $self->schema->txn_do(sub {
-        my $task = $self->rs('Task')->create($data);
-        $data->{id} = $task->id;
+        my $run = $self->rs('Run')->create($data);
+        $data->{id} = $run->id;
 
         # Now create a job for each active client
         my $clients = $self->active_clients();
         for my $client ($clients->all) {
             $self->rs('Job')->create({
-                task_id    => $task->id,
+                run_id     => $run->id,
                 client_id  => $client->id,
                 created_at => time,
                 state      => 'pending',
@@ -217,20 +217,20 @@ sub run {
 
         }
         # Create a timer event to forcefully mark this job as 'orphaned'
-        my $task_timeout = 30;
-        Mojo::IOLoop->timer($task_timeout => sub {
-            my $clienttask = $self->rs('Job')->search({
-                task_id     => $task->id,
+        my $run_timeout = 30;
+        Mojo::IOLoop->timer($run_timeout => sub {
+            my $job = $self->rs('Job')->search({
+                run_id      => $run->id,
                 state       => { '!=' => 'complete' },
             });
-            $clienttask->update({
+            $job->update({
                 state       => 'orphaned',
                 finished_at => time,
             });
-            $_->task->update({
+            $_->run->update({
                 state       => 'complete',
                 finished_at => time,
-            }) for $clienttask->all;
+            }) for $job->all;
         })
     });
 

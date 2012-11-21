@@ -20,7 +20,7 @@
     var jqXHR;
     var timer;
 
-    function send_result(state, task_id, clienttask_id) {
+    function send_result(state, run_id, job_id) {
 
         var results = test_log;
         clear_log();
@@ -33,13 +33,13 @@
         if (state != 'update') state = 'done';
 
 
-        $.ajax('[% api_base() %]/api/task/' + state, {
+        $.ajax('[% api_base() %]/api/run/' + state, {
             'data'   : {
-                'task_id'      : task_id,
-                'clienttask_id': clienttask_id,
-                'result'       : results,
-                'app_id'       : localStorage.app_id,
-                'client_id'    : client_id
+                'run_id'    : run_id,
+                'job_id'    : job_id,
+                'result'    : results,
+                'app_id'    : localStorage.app_id,
+                'client_id' : client_id
             },
             'success': function(data) {
                 if (state == 'done') {
@@ -69,20 +69,20 @@
         }
         var iframe = $('iframe');
         var start = (new Date).getTime();
-        jqXHR = $.ajax('[% api_base() %]/api/task/get', {
+        jqXHR = $.ajax('[% api_base() %]/api/run/get', {
             'data': {
                 'app_id':    localStorage.app_id,
                 'client_id': client_id,
             },
             'success': function(data) {
                 if (data.run) {
-                    var test = data.run.task;
+                    var test = data.run.run;
                     var msg = '';
                     iframe.attr('src', test.test_data.url );
                     iframe.off('load.autoscript');
                     iframe.on('load.autoscript', function() {
-                        test_id       = test.id;
-                        clienttask_id = test.clienttask_id;
+                        test_id = test.id;
+                        job_id  = test.job_id;
                         try {
                             run_tests( test.id, test.test );
                             $('.autoscript').remove();
@@ -92,7 +92,7 @@
                         send_result(
                             'done',
                             test.id,
-                            test.clienttask_id,
+                            test.job_id,
                             test_log
                         );
                     });
@@ -106,7 +106,7 @@
                     do_work();
                 }
                 else {
-                    console.log('Unexpected response to api/task/get');
+                    console.log('Unexpected response to api/run/get');
                     console.log(data);
                     update_state();
                 }
