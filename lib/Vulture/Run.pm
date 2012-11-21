@@ -157,8 +157,13 @@ sub log_run {
          );
 
     for my $result ($self->param('result[]')) {
+        my $state = $result =~ /\Aok /     ? 'ok'
+                  : $result =~ /\Anot ok / ? 'not ok'
+                  : $result =~ /\A# /      ? 'diag'
+                  :                          '-';
         $self->rs('JobResult')->create({
             job_id => $job->id,
+            state  => $state,
             result => $result,
         });
     }

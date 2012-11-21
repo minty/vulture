@@ -38,7 +38,9 @@ CREATE TABLE job (
 DROP TABLE IF EXISTS job_result;
 CREATE TABLE job_result (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    epoch           INTEGER NOT NULL,
     job_id          INTEGER NOT NULL,
+    state           TEXT NOT NULL,
     result          TEXT NOT NULL DEFAULT ''
 );
 DROP TABLE IF EXISTS task;
