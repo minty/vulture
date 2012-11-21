@@ -78,7 +78,11 @@ sub state {
 
     my $client = $self->client
         or return $self->to_json({ error => { slug => 'Bad client' } });
-    return $self->to_json({ active => $client ? 1 : 0 });
+    my $active = $client ? 1 : 0;
+    return $self->to_json({
+        active => $active,
+        id => $client->id,
+    });
 }
 
 sub client_hash {

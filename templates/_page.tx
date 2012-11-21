@@ -78,7 +78,7 @@
         function log(msg) {
             var dt = new Date;
             $('#log').prepend(
-                $('<p></p>').text(dt + ' : ' + msg)
+                $('<p></p>').text(dt.toUTCString() + ' : ' + msg)
             );
         }
         /* This would be called from a specific task.  It's passed a function

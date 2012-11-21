@@ -4,13 +4,10 @@
 
 <h1>client hq</h1>
 
-<input id=join  type=button value=join>
-<input id=leave type=button value=leave>
-<input id=state type=button value=state>
-<input id=work  type=button value=work disabled=disabled>
-<input id=stop  type=button value=stop disabled=disabled>
-<input id=clear type=button value="clear log">
-<p>current working state: <span id=msg></span></p>
+<input id=start type=button value="[S]tart working">
+<input id=stop  type=button value="[S]top working" disabled=disabled>
+<input id=state type=button value="[C]urrent state">
+<input id=clear type=button value="clear [l]og">
 
 <div id=log></div>
 
@@ -29,9 +26,7 @@
             log(elem);
         });
 
-
         if (state != 'update') state = 'done';
-
 
         $.ajax('[% api_base() %]/api/run/' + state, {
             'data'   : {
@@ -133,44 +128,26 @@
     }
   $(function() {
 
-    $('#work').on('click', function(e) {
-        if (working) return;
-        working = true;
-        $('#msg').text(working);
-        log('starting work');
-        $('#stop').attr('disabled', false);
-        $('#work').attr('disabled', 'disabled');
-        do_work();
-    });
-    $('#stop').on('click', function(e) {
-        stop_working();
-    });
     function stop_working() {
-        if (working) {
-            working = false;
-            $('#msg').text(working);
-            log('stopping work');
-        }
-        if (jqXHR) jqXHR.abort();
-        var work = $('#join').attr('disabled') == 'disabled' ? false : 'disabled';
-        $('#work').attr('disabled', work);
-        $('#stop').attr('disabled', 'disabled');
+        if (working) working = false;
+        if (jqXHR)   jqXHR.abort();
     }
 
-    $('#join').on('click', function(e) {
+    $('#start').on('click', function(e) {
         $.ajax('[% api_base() %]/api/client/join/', {
             'data': {
                 'app_id':    localStorage.app_id,
                 'client_id': client_id,
             },
             'success': function(data) {
-                log(typeof data.joined != 'undefined' ? 'joined' : 'failed');
-                update_state();
+                working = true;
+                tick();
+                do_work();
             }
         });
     });
 
-    $('#leave').on('click', function(e) {
+    $('#stop').on('click', function(e) {
         stop_working();
         $.ajax('[% api_base() %]/api/client/leave/', {
             'data': {
@@ -178,7 +155,9 @@
                 'client_id': client_id,
             },
             'success': function(data) {
-                log(typeof data.left != 'undefined' ? 'left' : 'failed');
+                if (typeof data.left == 'undefined') {
+                    log('An error occured when disconnecting');
+                }
                 update_state();
             }
         });
@@ -202,30 +181,43 @@
         });
     }
 
+    $('body').on('keydown', function(e) {
+        if (e.which == 83) {
+            var what = $('#start').attr('disabled') == 'disabled' ? 'stop' : 'start';
+            $('#'+what).click();
+        }
+        else if (e.which == 67) {
+            update_state();
+        }
+        else if (e.which == 76) {
+            $('#clear').click();
+        }
+    });
+
     function update_state() {
         get_state(function(data) {
-            var state = data.active ? 'joined' : 'left';
-            log('state is ' + state + ' for ' + localStorage.app_id + ' / ' + client_id);
+            var ident = 'for ' + localStorage.app_id + ' / ' + client_id;
             if (data.active) {
-                $('#join').attr('disabled', 'disabled');
-                $('#leave').attr('disabled', false);
-                if (working) {
-                    $('#work').attr('disabled', 'disabled');
-                    $('#stop').attr('disabled', false);
-                }
-                else {
-                    $('#work').attr('disabled', false);
-                    $('#stop').attr('disabled', 'disabled');
-                }
+                var state = working ? '&' : 'but not';
+                log('Joined ' + state + ' working ' + ident);
+                $('#start').attr('disabled', 'disabled');
+                $('#stop').attr('disabled', false);
             }
             else {
                 stop_working();
-                $('#join').attr('disabled', false);
-                $('#leave, #work, #stop').attr('disabled', 'disabled');
+                var state = working ? 'but, oddly, ' : '& not';
+                log('Disconnceted ' + state + ' working ' + ident);
+                $('#start').attr('disabled', false);
+                $('#stop').attr('disabled', 'disabled');
             }
         });
     }
-    update_state();
+    function tick() {
+        if (!working) return;
+        update_state();
+        setTimeout(tick, 300000); /* 5 mins */
+    }
+    tick();
 
   });
 </script>
