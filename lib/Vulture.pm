@@ -1,10 +1,5 @@
 package Vulture;
 
-# XXX
-# Proxy fetch api
-# simple key-value store api
-# stats pages
-
 use Mojo::Base 'Mojolicious';
 use Mojo::IOLoop;
 use Text::Xslate::Bridge::TT2;
@@ -40,6 +35,7 @@ sub startup {
             ],
             function => {
                 array    => sub { return [ shift->all ] },
+                # http://search.cpan.org/dist/Mojolicious/lib/Mojolicious.pm#defaults
                 api_base => sub { return $self->config->{base_path} || '' },
             },
             verbose => 1,
