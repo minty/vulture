@@ -23,6 +23,6 @@ __PACKAGE__->add_columns(
 );
 __PACKAGE__->set_primary_key("id");
 
-__PACKAGE__->has_many(tasks => 'Vulture::Schema::Result::ClientTask', 'client_id');
+__PACKAGE__->has_many(jobs => 'Vulture::Schema::Result::Job', 'client_id');
 
 1;

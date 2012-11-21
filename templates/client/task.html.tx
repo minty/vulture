@@ -7,7 +7,7 @@
   </ul>
   <hr>
   <ul class=clientlist>
-  [% FOR ct IN array( task.client_tasks ) %]
+  [% FOR ct IN array( task.jobs ) %]
     <li><ul>
       <li>[% ct.state %] for [% ct.client.ip %] using [% ct.client.agent %]</li>
       <ul>

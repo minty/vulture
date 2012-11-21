@@ -41,7 +41,7 @@ sub get {
         );
 
     # Don't issue new tasks if there are already ones running for this client
-    my $existing = $self->rs('ClientTask')->search({
+    my $existing = $self->rs('Job')->search({
         client_id => $client->id,
         state     => 'running',
     });
@@ -79,7 +79,7 @@ sub get {
         my $delta = time - $start;
         my $uid = join ' / ', $client->app_id, $client->client_id;
         warn "$delta : polling db for work for $uid";
-        $clienttask = $self->rs('ClientTask')->search({
+        $clienttask = $self->rs('Job')->search({
             client_id => $client->id,
             state     => 'pending',
         }, {
@@ -148,7 +148,7 @@ sub log_task {
 
     my $clienttask_id = $self->param('clienttask_id')
         or return $self->to_json({ error => { slug => 'missing clienttask id' } });
-    my $clienttask = $self->rsfind(ClientTask => $clienttask_id)
+    my $clienttask = $self->rsfind(Job => $clienttask_id)
         or return $self->to_json({ error => { slug => "cannot find clienttask $clienttask_id" } });
 
     my $client = $self->client
@@ -157,9 +157,9 @@ sub log_task {
          );
 
     for my $result ($self->param('result[]')) {
-        $self->rs('ClientTaskResult')->create({
-            client_task_id => $clienttask->id,
-            result         => $result,
+        $self->rs('JobResult')->create({
+            job_id => $clienttask->id,
+            result => $result,
         });
     }
 
@@ -173,11 +173,11 @@ sub log_task {
 
     # If all clienttasks for the current task are now 'complete'
     # then update $task->state == complete
-    my $all_clienttasks = $self->rs('ClientTask')->search({
+    my $jobs = $self->rs('Job')->search({
         task_id => $clienttask->task_id
     });
-    my $total = $all_clienttasks->count;
-    my $complete = $all_clienttasks->search({ state => 'complete' })->count;
+    my $total = $jobs->count;
+    my $complete = $jobs->search({ state => 'complete' })->count;
     if ($total == $complete) {
         $clienttask->task->update({
             state => 'complete',
@@ -205,10 +205,10 @@ sub run {
         my $task = $self->rs('Task')->create($data);
         $data->{id} = $task->id;
 
-        # Now create a client_task for each active client
+        # Now create a job for each active client
         my $clients = $self->active_clients();
         for my $client ($clients->all) {
-            $self->rs('ClientTask')->create({
+            $self->rs('Job')->create({
                 task_id    => $task->id,
                 client_id  => $client->id,
                 created_at => time,
@@ -216,10 +216,10 @@ sub run {
             });
 
         }
-        # Create a timer event to forcefully mark this client task as 'orphaned'
+        # Create a timer event to forcefully mark this job as 'orphaned'
         my $task_timeout = 30;
         Mojo::IOLoop->timer($task_timeout => sub {
-            my $clienttask = $self->rs('ClientTask')->search({
+            my $clienttask = $self->rs('Job')->search({
                 task_id     => $task->id,
                 state       => { '!=' => 'complete' },
             });

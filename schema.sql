@@ -25,8 +25,8 @@ CREATE TABLE task (
     state       CHAR(10) NOT NULL default 'pending'
 );
 
-DROP TABLE IF EXISTS client_task;
-CREATE TABLE client_task (
+DROP TABLE IF EXISTS job;
+CREATE TABLE job (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
     task_id     INTEGER NOT NULL,
     client_id   INTEGER NOT NULL,
@@ -35,10 +35,10 @@ CREATE TABLE client_task (
     finished_at INTEGER,
     state       CHAR(10) NOT NULL default 'pending'
 );
-DROP TABLE IF EXISTS client_task_result;
-CREATE TABLE client_task_result (
+DROP TABLE IF EXISTS job_result;
+CREATE TABLE job_result (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
-    client_task_id  INTEGER NOT NULL,
+    job_id          INTEGER NOT NULL,
     result          TEXT NOT NULL DEFAULT ''
 );
 DROP TABLE IF EXISTS test;

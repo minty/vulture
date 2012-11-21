@@ -6,7 +6,7 @@
       <li><ul>
         <li>Test [% task.test_id %] <small>(task id [% task.id %])</small></li>
         <li>State is [% task.state %], has 
-          <a href="[% api_base() %]/client/task/[% task.id %]">[% task.client_tasks.count %] client tasks</a></li>
+          <a href="[% api_base() %]/client/task/[% task.id %]">[% task.jobs.count %] jobs</a></li>
         <li>Created at [% task.created_at %]</li>
         [% IF task.started_at %]
           <li>Started at [% task.started_at %]</li>
