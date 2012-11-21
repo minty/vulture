@@ -6,7 +6,8 @@ a Mojolicious project for running javascript based tests in multiple, distribute
 Roughly:
 
     # clone https://github.com/minty/vulture/
-    cd vulture.git
+    cd vulture
+    cpanm --installdeps .
     sqlite3 vulture.sqlite < ./schema.sql
     morbo ./script/vulture
 
