@@ -5,8 +5,8 @@
     <li
       class=active
       data-id="[% client.id %]"
-      data-guid="[% client.guid %]"
-      data-sessionid="[% client.sessionid %]"
+      data-app_id="[% client.app_id %]"
+      data-client_id="[% client.client_id %]"
       data-agent="[% client.agent %]"
     ><ul>
       <li>
@@ -14,7 +14,7 @@
            <a href="[% api_base() %]/agent/show/?agent=[% client.agent | uri %]">[% client.agent %]</a></b>
       </li>
       <li>last seen [% client.last_seen %]</li>
-      <li>guid/session id [% client.guid %] / [% client.sessionid %]</li>
+      <li>app/client id [% client.app_id %] / [% client.client_id %]</li>
       <li>
         [% client.tasks.count %] tasks,
         [% client.tasks.search({ state => 'pending' }).count %] pending

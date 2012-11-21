@@ -8,8 +8,8 @@ CREATE TABLE client (
     agent_browser_version TEXT NOT NULL DEFAULT '',
     agent_engine          TEXT NOT NULL DEFAULT '',
     ip                    TEXT NOT NULL,
-    guid                  TEXT NOT NULL,
-    sessionid             TEXT NOT NULL,
+    app_id                TEXT NOT NULL,
+    client_id             TEXT NOT NULL,
     joined_at             INTEGER NOT NULL,
     last_seen             INTEGER NOT NULL,
     active                CHAR(1) NOT NULL default 0

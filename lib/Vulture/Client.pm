@@ -32,16 +32,16 @@ sub join {
     my ($self) = @_;
 
     my ($ua, $ip) = $self->ua_ip();
-    my $guid      = $self->param('guid');
-    my $sessionid = $self->param('sessionid');
-    return $self->to_json({ error => { slug => 'Missing guid/sessionid' } })
-        if !$guid || !$sessionid;
+    my $app_id    = $self->param('app_id');
+    my $client_id = $self->param('client_id');
+    return $self->to_json({ error => { slug => 'Missing app/client id' } })
+        if !$app_id || !$client_id;
     my $rs = $self->rs('Client');
     my $client = $rs->find({
         agent     => $ua,
         ip        => $ip,
-        guid      => $guid,
-        sessionid => $sessionid,
+        app_id    => $app_id,
+        client_id => $client_id,
     });
     if ($client) { $client->update({
         active    => 1,
@@ -59,16 +59,16 @@ sub join {
             agent_browser_version => $browser->public_version || '',
             agent_engine          => $browser->engine_string  || '',
             ip                    => $ip,
-            guid                  => $guid,
-            sessionid             => $sessionid,
+            app_id                => $app_id,
+            client_id             => $client_id,
             active                => 1,
         });
     }
     return $self->to_json({ joined => {
         agent     => $ua,
         ip        => $ip,
-        guid      => $guid,
-        sessionid => $sessionid,
+        app_id    => $app_id,
+        client_id => $client_id,
     } });
 }
 
@@ -87,8 +87,8 @@ sub client_hash {
         id        => $client->id,
         ip        => $client->ip,
         agent     => $client->agent,
-        guid      => $client->guid,
-        sessionid => $client->sessionid,
+        app_id    => $client->app_id,
+        client_id => $client->client_id,
         active    => $client->active,
     };
 }

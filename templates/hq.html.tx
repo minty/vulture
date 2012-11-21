@@ -15,7 +15,7 @@
 <div id=log></div>
 
 <script type="text/javascript">
-    var sessionid = GUID();
+    var client_id = GUID();
     var working = false;
     var jqXHR;
     var timer;
@@ -38,8 +38,8 @@
                 'task_id'      : task_id,
                 'clienttask_id': clienttask_id,
                 'result'       : results,
-                'guid'         : localStorage.guid,
-                'sessionid'    : sessionid
+                'app_id'       : localStorage.app_id,
+                'client_id'    : client_id
             },
             'success': function(data) {
                 if (state == 'done') {
@@ -61,7 +61,7 @@
         };
         return (S4() + S4() + '-' + S4() + S4() + '-' + S4() + S4());
     }
-    if (!localStorage.guid) localStorage.guid = GUID();
+    if (!localStorage.app_id) localStorage.app_id = GUID();
     function do_work() {
         if (!working) {
             clearTimeout(timer);
@@ -71,8 +71,8 @@
         var start = (new Date).getTime();
         jqXHR = $.ajax('[% api_base() %]/api/task/get', {
             'data': {
-                'guid':      localStorage.guid,
-                'sessionid': sessionid,
+                'app_id':    localStorage.app_id,
+                'client_id': client_id,
             },
             'success': function(data) {
                 if (data.run) {
@@ -160,8 +160,8 @@
     $('#join').on('click', function(e) {
         $.ajax('[% api_base() %]/api/client/join/', {
             'data': {
-                'guid':      localStorage.guid,
-                'sessionid': sessionid,
+                'app_id':    localStorage.app_id,
+                'client_id': client_id,
             },
             'success': function(data) {
                 log(typeof data.joined != 'undefined' ? 'joined' : 'failed');
@@ -174,8 +174,8 @@
         stop_working();
         $.ajax('[% api_base() %]/api/client/leave/', {
             'data': {
-                'guid':      localStorage.guid,
-                'sessionid': sessionid,
+                'app_id':    localStorage.app_id,
+                'client_id': client_id,
             },
             'success': function(data) {
                 log(typeof data.left != 'undefined' ? 'left' : 'failed');
@@ -195,8 +195,8 @@
     function get_state(on_success) {
         $.ajax('[% api_base() %]/api/client/state/', {
             'data': {
-                'guid':      localStorage.guid,
-                'sessionid': sessionid,
+                'app_id':    localStorage.app_id,
+                'client_id': client_id,
             },
             'success': function(data) { on_success(data) }
         });
@@ -205,7 +205,7 @@
     function update_state() {
         get_state(function(data) {
             var state = data.active ? 'joined' : 'left';
-            log('state is ' + state + ' for ' + localStorage.guid + ' / ' + sessionid);
+            log('state is ' + state + ' for ' + localStorage.app_id + ' / ' + client_id);
             if (data.active) {
                 $('#join').attr('disabled', 'disabled');
                 $('#leave').attr('disabled', false);

@@ -106,17 +106,17 @@ sub startup {
         my ($self) = @_;
 
         my ($ua, $ip) = $self->ua_ip();
-        my $guid      = $self->param('guid');
-        my $sessionid = $self->param('sessionid');
-        if (!$guid || !$sessionid) {
-            warn "Missing guid/sessionid";
+        my $app_id    = $self->param('app_id');
+        my $client_id = $self->param('client_id');
+        if (!$app_id || !$client_id) {
+            warn "Missing app/client id";
             return;
         }
         return $self->rsfind(Client => {
             agent     => $ua,
             ip        => $ip,
-            guid      => $guid,
-            sessionid => $sessionid,
+            app_id    => $app_id,
+            client_id => $client_id,
             active    => 1,
         });
     });
@@ -131,7 +131,7 @@ sub startup {
             active    => 1,
             last_seen => { '<' => time - 300 }
         });
-        warn "$now Disconnecting '" . $_->agent . "' " . $_->guid . '/' . $_->sessionid
+        warn "$now Disconnecting '" . $_->agent . "' " . $_->app_id . '/' . $_->client_id
             for $clients->all;
         $clients->update({ active => 0 });
     });

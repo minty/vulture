@@ -153,8 +153,8 @@
         $('.clientlist li.active .eject').on('click', function(e) {
         var o = $(this).parents('li.active');
         console.log(o.data('id'));
-        console.log(o.data('guid'));
-        console.log(o.data('sessionid'));
+        console.log(o.data('app_id'));
+        console.log(o.data('client_id'));
         console.log(o.data('agent'));
         $.ajax('[% api_base() %]/api/client/eject/' + o.data('id'), {
             'success': function(data) {

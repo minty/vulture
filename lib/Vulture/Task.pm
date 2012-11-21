@@ -77,7 +77,7 @@ sub get {
 
     $id = Mojo::IOLoop->recurring($freq => sub {
         my $delta = time - $start;
-        my $uid = join ' / ', $client->guid, $client->sessionid;
+        my $uid = join ' / ', $client->app_id, $client->client_id;
         warn "$delta : polling db for work for $uid";
         $clienttask = $self->rs('ClientTask')->search({
             client_id => $client->id,
