@@ -8,6 +8,7 @@ Roughly:
     # clone https://github.com/minty/vulture/
     cd vulture
     cpanm --installdeps .
+    # review/edit/tweak etc/vulture.conf
     sqlite3 vulture.sqlite < ./schema.sql
     morbo ./script/vulture
 
