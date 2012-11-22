@@ -160,7 +160,7 @@ sub log_run {
         my $state = $result =~ /\Aok /     ? 'ok'
                   : $result =~ /\Anot ok / ? 'not ok'
                   : $result =~ /\A# /      ? 'diag'
-                  :                          '-';
+                  :                          '  ';
         $self->rs('JobResult')->create({
             job_id => $job->id,
             state  => $state,

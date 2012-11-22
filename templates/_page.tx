@@ -143,6 +143,7 @@
         var task_log = [];
         var task_id;
         var job_id;
+        var counter = 1;
 
         function clear_log()   { task_log = [] }
         function diag(message) { task_log.push( '# ' + message ) }
@@ -150,7 +151,8 @@
         function fail(test_name) { ok(false, test_name) }
         function ok(result, test_name) {
             var res = result ? 'ok' : 'not ok';
-            task_log.push( res + ' ' + test_name );
+            task_log.push( res + ' ' + counter + ' ' + test_name );
+            counter = counter + 1;
         }
         function is(got, expected, test_name) {
             ok( got == expected, test_name );

@@ -46,7 +46,7 @@
     run_btn.on('click', function(e) {
         run_btn.val('running');
         $('#console').hide();
-
+        counter = 1;
         var url = $('input[name="url"]').val();
         l( "Loading " + url );
         run_task();
@@ -60,6 +60,7 @@
         var id     = $('input[name="id"]').val();
         var url    = $('input[name="url"]').val();
         var iframe = $('iframe');
+        counter = 1;
         l( "Loading " + url );
 
         iframe

@@ -78,6 +78,7 @@
                     iframe.on('load.autoscript', function() {
                         task_id = task.id;
                         job_id  = task.job_id;
+                        counter = 1;
                         try {
                             run_task( task.id, task.task );
                             $('.autoscript').remove();
