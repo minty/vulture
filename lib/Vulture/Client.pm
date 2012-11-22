@@ -133,14 +133,11 @@ sub apirun {
 
     my $run_id = $self->param('run_id')
         or return $self->to_json({ error => { slug => 'No run id' } });
-    my $rs = $self->rs('Run');
-    $rs->result_class('DBIx::Class::ResultClass::HashRefInflator');
-    my $run = $rs->find($run_id, {
-        join     => { jobs => 'results' },
-        prefetch => { jobs => 'results' },
-    }) or return $self->to_json({ error => { slug => 'Bad run id' } });
+    my $ref = $self->run_to_hash($run_id);
 
-    return $self->to_json({ run => $run });
+    return $self->to_json({ error => { slug => 'Bad run id' } })
+        if !$ref;
+    return $self->to_json({ run => $ref });
 }
 
 sub run {

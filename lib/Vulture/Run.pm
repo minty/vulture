@@ -212,6 +212,8 @@ sub run {
         })
     }
 
+    my $run_timeout = 30;
+
     my $data = {
         task_id    => $id,
         created_at => time,
@@ -233,7 +235,6 @@ sub run {
 
         }
         # Create a timer event to forcefully mark this job as 'orphaned'
-        my $run_timeout = 30;
         Mojo::IOLoop->timer($run_timeout => sub {
             my $job = $self->rs('Job')->search({
                 run_id      => $run->id,
@@ -250,7 +251,73 @@ sub run {
         })
     });
 
-    return $self->to_json({ run => $data });
+    # Return a json response containing the run id, asap.  Then poll:
+    #   client/run/$run_id
+    #   api/client/run/$run_id
+    #
+    # If block=1 is appended to the querystring we block until the new run is
+    # in some state other than pending or running.
+    #
+    # And we'll return a rich json response, similar to what
+    # api/client/run/$run_id will return.
+    #
+    # Unless you also append tap=1 to the querystring (this is only possible
+    # when you are also using block=1).  In this case, TAP compliant response
+    # will be returned.
+
+    return $self->to_json({ run => $data })
+        if !$self->param('block');
+
+    my $id;
+    my $abort   = 0;
+    my $freq    = $self->config->{poll_freq} || 5;
+    my $start   = time;
+    my $clear   = sub { Mojo::IOLoop->remove($id) };
+    my $stream  = Mojo::IOLoop->stream($self->tx->connection);
+
+    # If the client kills the connect, we want to kill the recurring timer
+    # Or timeout after a hard period
+    $stream->on(close => sub { $abort = 1 });
+    $stream->timeout($run_timeout + 5);
+
+    $id = Mojo::IOLoop->recurring($freq => sub {
+        my $run   = $self->rs('Run')->find($data->{id})
+            or return;
+        my $delta = time - $start;
+        my %poll  = map { $_ => 1 } qw<pending running>;
+
+        my $finish = 0;
+        $finish = 1
+            if $abort                    # stream closed (client disconnect)
+            || !$poll{ $run->state }     # run completed / failed
+            || $delta > $run_timeout;    # we hit a timeout
+
+        if ($finish) {
+            $clear->();
+
+            return $self->to_json({ run => $self->run_to_hash($run->id) })
+                if !$self->param('tap');
+
+            my $tap = '# Run id ' . $run->id . "\n";
+            for my $job ($run->jobs) {
+                my $client = $job->client;
+                my $ident = join ' ',
+                    $client->agent_browser,
+                    $client->agent_browser_version,
+                    'on',
+                    $client->agent_os;
+                $tap .= '# Job id ' . $job->id . " : $ident\n";
+                for my $result ($job->results) {
+                    $tap .= $result->result . "\n";
+                }
+                $tap .= "1.." . $job->results->search({
+                    state => { -in => ['ok', 'not ok'] }
+                })->count . "\n";
+            }
+            return $self->render(text => $tap, format => 'txt');
+        }
+    });
+    return;
 }
 
 1;

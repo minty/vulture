@@ -73,6 +73,16 @@ sub startup {
         else        { _to_json($self, $ref) }
     });
 
+    $self->helper(run_to_hash => sub {
+        my ($self, $run_id) = @_;
+        my $rs = $self->rs('Run');
+        $rs->result_class('DBIx::Class::ResultClass::HashRefInflator');
+        return $rs->find($run_id, {
+            join     => { jobs => 'results' },
+            prefetch => { jobs => 'results' },
+        });
+    });
+
     $self->helper(to_api_list => sub {
         my ($self, $rs) = @_;
         $rs->result_class('DBIx::Class::ResultClass::HashRefInflator');
