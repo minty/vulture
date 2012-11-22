@@ -155,15 +155,24 @@ sub log_run {
             { error => { slug => 'Bad client' } },
          );
 
+    my $count     = 1;
+    my $test_name = '';
     for my $result ($self->param('result[]')) {
+        chomp($result);
         my $state = $result =~ /\Aok /     ? 'ok'
                   : $result =~ /\Anot ok / ? 'not ok'
                   : $result =~ /\A# /      ? 'diag'
                   :                          '  ';
+        if ($result =~ /\A(ok|not ok) (\d+) (.*)/) {
+            $count     = $2;
+            $test_name = $3;
+        }
         $self->rs('JobResult')->create({
-            job_id => $job->id,
-            state  => $state,
-            result => $result,
+            job_id    => $job->id,
+            state     => $state,
+            count     => $count,
+            test_name => $test_name,
+            result    => $result,
         });
     }
 

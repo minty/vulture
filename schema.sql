@@ -41,6 +41,8 @@ CREATE TABLE job_result (
     epoch           INTEGER NOT NULL,
     job_id          INTEGER NOT NULL,
     state           TEXT NOT NULL,
+    count           INTEGER NOT NULL,
+    test_name       TEXT NOT NULL,
     result          TEXT NOT NULL DEFAULT ''
 );
 DROP TABLE IF EXISTS task;
