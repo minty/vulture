@@ -201,6 +201,18 @@ sub run {
     return $self->render_not_found
         if $id !~ /\A[0-9]+\z/;
 
+    my $clients = $self->active_clients();
+
+    if (!$clients->count) {
+        return $self->render(
+            text   => "# No active clients available\n",
+            format => 'txt'
+        ) if $self->param('tap');
+        return $self->to_json({
+            error => { clients => 'No active clients available' }
+        })
+    }
+
     my $data = {
         task_id    => $id,
         created_at => time,
