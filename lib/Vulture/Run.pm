@@ -72,8 +72,7 @@ sub get {
     # If the client kills the connect, we want to kill the recurring timer
     my $abort = 0;
     $stream->on(close => sub { $abort = 1 });
-
-    Mojo::IOLoop->stream($self->tx->connection)->timeout($poll * 2);
+    $stream->timeout($poll * 2);
 
     $id = Mojo::IOLoop->recurring($freq => sub {
         my $delta = time - $start;
@@ -94,7 +93,7 @@ sub get {
             || !$current_client->active     # client is no longer active
             || $abort                       # stream closed (client disconnect)
             || $job                         # we found work for the client
-            || time - $start > $poll;       # we hit a timeout
+            || $delta > $poll;              # we hit a timeout
 
         if ($finish) {
             $self->on_timer_finish($job);
