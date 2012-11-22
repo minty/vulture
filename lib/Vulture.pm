@@ -157,6 +157,8 @@ sub startup {
         ->to(controller => 'client', action => 'list');
     $r->get("$base/client/run/:run_id")
         ->to(controller => 'client', action => 'run');
+    $r->get("$base/api/client/run/:run_id")
+        ->to(controller => 'client', action => 'apirun');
     $r->get("$base/api/client/list")
         ->to(controller => 'client', action => 'api_list');
     $r->get("$base/api/client/state")

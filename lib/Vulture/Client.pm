@@ -128,6 +128,21 @@ sub eject {
     return $self->to_json({ left => $self->client_hash($client) });
 }
 
+sub apirun {
+    my ($self) = @_;
+
+    my $run_id = $self->param('run_id')
+        or return $self->to_json({ error => { slug => 'No run id' } });
+    my $rs = $self->rs('Run');
+    $rs->result_class('DBIx::Class::ResultClass::HashRefInflator');
+    my $run = $rs->find($run_id, {
+        join     => { jobs => 'results' },
+        prefetch => { jobs => 'results' },
+    }) or return $self->to_json({ error => { slug => 'Bad run id' } });
+
+    return $self->to_json({ run => $run });
+}
+
 sub run {
     my ($self) = @_;
 
