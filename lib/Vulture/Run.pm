@@ -308,6 +308,7 @@ sub run {
                 if !$self->param('tap');
 
             my $tap = '# Run id ' . $run->id . "\n";
+            my $counter = 0;
             for my $job ($run->jobs) {
                 my $client = $job->client;
                 my $ident = join ' ',
@@ -317,12 +318,15 @@ sub run {
                     $client->agent_os;
                 $tap .= '# Job id ' . $job->id . " : $ident\n";
                 for my $result ($job->results) {
-                    $tap .= $result->result . "\n";
+                    my $line = $result->result;
+                    if ($line =~ /\A(ok|not ok) (\d+) (.*)/) {
+                        $counter++;
+                        $line = "$1 $counter $3";
+                    }
+                    $tap .= "$line\n";
                 }
-                $tap .= "1.." . $job->results->search({
-                    state => { -in => ['ok', 'not ok'] }
-                })->count . "\n";
             }
+            $tap .= "1..$counter\n";
             return $self->render(text => $tap, format => 'txt');
         }
     });
