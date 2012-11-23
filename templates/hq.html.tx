@@ -12,7 +12,7 @@
 <div id=log></div>
 
 <script type="text/javascript">
-    var client_id = GUID();
+    var client_id = [% IF client_id %]"[% client_id %]"[% ELSE %]GUID()[% END %];
     var working = false;
     var jqXHR;
     var timer;
@@ -108,6 +108,8 @@
         return (S4() + S4() + '-' + S4() + S4() + '-' + S4() + S4());
     }
     if (!localStorage.app_id) localStorage.app_id = GUID();
+    [% IF app_id %]localStorage.app_id = "[% app_id %]";[% END %]
+
     function do_work() {
         if (!working) {
             clearTimeout(timer);
