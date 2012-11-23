@@ -181,6 +181,8 @@ sub startup {
         ->to(controller => 'client', action => 'leave');
     $r->get("$base/client/")
         ->to(controller => 'client', action => 'hq');
+    $r->post("$base/client/")
+        ->to(controller => 'client', action => 'hq');
 
     $r->get("$base/agent/list")
         ->to(controller => 'agent', action => 'list');
