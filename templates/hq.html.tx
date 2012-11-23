@@ -17,6 +17,57 @@
     var jqXHR;
     var timer;
 
+    function tick() {
+        if (!working) return;
+        update_state();
+        setTimeout(tick, 300000); /* 5 mins */
+    }
+
+    function stop_working() {
+        if (working) working = false;
+        if (jqXHR)   jqXHR.abort();
+    }
+
+    function disconnect(code) {
+        stop_working();
+        $.ajax('[% api_base() %]/api/client/leave/', {
+            'data': {
+                'app_id':    localStorage.app_id,
+                'client_id': client_id,
+            },
+            'success': code,
+        });
+    }
+
+    function get_state(on_success) {
+        $.ajax('[% api_base() %]/api/client/state/', {
+            'data': {
+                'app_id':    localStorage.app_id,
+                'client_id': client_id,
+            },
+            'success': function(data) { on_success(data) }
+        });
+    }
+
+    function update_state() {
+        get_state(function(data) {
+            var ident = 'for ' + localStorage.app_id + ' / ' + client_id;
+            if (data.active) {
+                var state = working ? '&' : 'but not';
+                log('Joined ' + state + ' working ' + ident);
+                $('#start').attr('disabled', 'disabled');
+                $('#stop').attr('disabled', false);
+            }
+            else {
+                stop_working();
+                var state = working ? 'but, oddly, ' : '& not';
+                log('Disconnceted ' + state + ' working ' + ident);
+                $('#start').attr('disabled', false);
+                $('#stop').attr('disabled', 'disabled');
+            }
+        });
+    }
+
     function send_result(state, run_id, job_id) {
 
         var results = task_log;
@@ -129,11 +180,6 @@
     }
   $(function() {
 
-    function stop_working() {
-        if (working) working = false;
-        if (jqXHR)   jqXHR.abort();
-    }
-
     $('#start').on('click', function(e) {
         $.ajax('[% api_base() %]/api/client/join/', {
             'data': {
@@ -147,17 +193,6 @@
             }
         });
     });
-
-    function disconnect(code) {
-        stop_working();
-        $.ajax('[% api_base() %]/api/client/leave/', {
-            'data': {
-                'app_id':    localStorage.app_id,
-                'client_id': client_id,
-            },
-            'success': code,
-        });
-    }
 
     $('#stop').on('click', function(e) {
         disconnect(function(data) {
@@ -176,16 +211,6 @@
         $('#log').html('');
     });
 
-    function get_state(on_success) {
-        $.ajax('[% api_base() %]/api/client/state/', {
-            'data': {
-                'app_id':    localStorage.app_id,
-                'client_id': client_id,
-            },
-            'success': function(data) { on_success(data) }
-        });
-    }
-
     $('body').on('keydown', function(e) {
         if (e.which == 83) {
             var what = $('#start').attr('disabled') == 'disabled' ? 'stop' : 'start';
@@ -198,30 +223,6 @@
             $('#clear').click();
         }
     });
-
-    function update_state() {
-        get_state(function(data) {
-            var ident = 'for ' + localStorage.app_id + ' / ' + client_id;
-            if (data.active) {
-                var state = working ? '&' : 'but not';
-                log('Joined ' + state + ' working ' + ident);
-                $('#start').attr('disabled', 'disabled');
-                $('#stop').attr('disabled', false);
-            }
-            else {
-                stop_working();
-                var state = working ? 'but, oddly, ' : '& not';
-                log('Disconnceted ' + state + ' working ' + ident);
-                $('#start').attr('disabled', false);
-                $('#stop').attr('disabled', 'disabled');
-            }
-        });
-    }
-    function tick() {
-        if (!working) return;
-        update_state();
-        setTimeout(tick, 300000); /* 5 mins */
-    }
     tick();
 
   });
