@@ -1,25 +1,22 @@
 [% WRAPPER "_page.tx" WITH body_class = 'taskedit', type = 'index' %]
 
-<iframe src="[% task_data.url |html %]"></iframe>
+<textarea name=task tabindex=2>[% task %]</textarea>
 
 <h1>Edit task</h1>
 
 <input type=hidden name=id value="[% id %]">
 <div>
-  task url: <input type=text name=url value="[% task_data.url |html %]">
-  [launch tester client]
-  </div>
+  task url: <input type=text name=url value="[% task_data.url |html %]" tabindex=1>
+</div>
 
 <p>
-<input type=button value=run>
-<input type=button id=lar value="load &amp; run">
-<input type=button value=save>
+<input type=button value=run tabindex=3>
+<input type=button id=lar value="load &amp; run" tabindex=4>
+<input type=button value=save tabindex=5>
 <span id=console></span>
 </p>
 
-<textarea name=task rows=20 cols=70>[% task %]</textarea>
-
-<div id=log></div>
+<iframe src="[% task_data.url |html %]"></iframe>
 
 <script type="text/javascript">
 
@@ -134,6 +131,5 @@
     });
   });
 </script>
-<p id=log></p>
 
 [% END %]

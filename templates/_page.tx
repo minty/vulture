@@ -54,8 +54,7 @@
       .clientlist li.left a {
         color: #ccc;
       }
-      .hq iframe,
-      .taskedit iframe {
+      .hq iframe {
         position: absolute;
         right: 0;
         top: 0;
@@ -63,9 +62,25 @@
         width: 800px;
         height: 100%;
       }
-      .taskedit input[name="id"],
+      .taskedit iframe {
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        z-index: 1;
+        width: 100%;
+        height: 50%;
+        background: #fff;
+      }
       .taskedit input[name="url"] {
         width: 30em;
+      }
+      .taskedit textarea {
+        position: fixed;
+        top: 0;
+        right: 0;
+        height: 50%;
+        background: #eee;
+        width: 50%;
       }
       #console {
         font-size: 80%;
