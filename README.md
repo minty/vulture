@@ -32,3 +32,4 @@ You join, then click "Start working" (or press the 's' key).
 
 * [Vocabulary](https://github.com/minty/vulture/wiki/Vocabulary)
 * [Roadmap](https://github.com/minty/vulture/wiki/Roadmap)
+* [Examples](https://github.com/minty/vulture/wiki/Example-admin-url-usage)
