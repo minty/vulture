@@ -186,13 +186,15 @@
                 'app_id':    localStorage.app_id,
                 'client_id': client_id,
             },
-            'success': function(data) {
-                working = true;
-                tick();
-                do_work();
-            }
+            'success': function(data) { after_connect() }
         });
     });
+
+    function after_connect() {
+        working = true;
+        tick();
+        do_work();
+    }
 
     $('#stop').on('click', function(e) {
         disconnect(function(data) {
