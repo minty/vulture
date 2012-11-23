@@ -22,6 +22,26 @@
 <div id=log></div>
 
 <script type="text/javascript">
+
+    function save_test(success_function, error_function) {
+        var js  = $('textarea').val();
+        var id  = $('input[name="id"]').val();
+        var url = $('input[name="url"]').val();
+
+        console.log(id);
+        console.log(url);
+        console.log(js);
+
+        $.ajax('[% api_base() %]/api/task/save/' + id, {
+            'data': {
+                'task_js': js,
+                'url'    : url,
+            },
+            'success': success_function,
+            'error': error_function,
+        });
+    }
+
     function run_task() {
         var id     = $('input[name="id"]').val();
         var tests  = $('textarea');
@@ -74,33 +94,22 @@
     });
 
     save_btn.on('click', function(e) {
-
         save_btn.val('saving');
         $('#console').hide();
-        var js  = $('textarea').val();
-        var id  = $('input[name="id"]').val();
-        var url = $('input[name="url"]').val();
-
-        console.log(id);
-        console.log(url);
-        console.log(js);
-
-        $.ajax('[% api_base() %]/api/task/save/' + id, {
-            'data': {
-                'task_js': js,
-                'url'    : url,
-            },
-            'success': function(data) {
+        save_test(
+            function(data) {
                 var dt = new Date;
+                var id = $('input[name="id"]').val();
                 $('#console')
                     .text(id + ' saved at ' + dt)
                     .fadeIn();
                 save_btn.val('save');
             },
-            'error': function(xhr, status) {
+            function(xhr, status) {
+                var id = $('input[name="id"]').val();
                 console.log('error saving task ' + id + ' ' + status);
             }
-        });
+        );
     });
   });
 </script>
