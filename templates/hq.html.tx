@@ -148,19 +148,23 @@
         });
     });
 
-    $('#stop').on('click', function(e) {
+    function disconnect(code) {
         stop_working();
         $.ajax('[% api_base() %]/api/client/leave/', {
             'data': {
                 'app_id':    localStorage.app_id,
                 'client_id': client_id,
             },
-            'success': function(data) {
-                if (typeof data.left == 'undefined') {
-                    log('An error occured when disconnecting');
-                }
-                update_state();
+            'success': code,
+        });
+    }
+
+    $('#stop').on('click', function(e) {
+        disconnect(function(data) {
+            if (typeof data.left == 'undefined') {
+                log('An error occured when disconnecting');
             }
+            update_state();
         });
     });
 
