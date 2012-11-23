@@ -73,14 +73,57 @@
         color: #666;
       }
     </style>
-    <script type="text/javascript" src="/jquery.js"></script>
-    <script type="text/javascript">
+    <script src="/jquery.js"></script>
+    <script src="/jsuri.js"></script>
+    <script>
         function l(m) { console.log(m) }
         function log(msg) {
             var dt = new Date;
             $('#log').prepend(
                 $('<p></p>').text(dt.toUTCString() + ' : ' + msg)
             );
+        }
+        function redirect_required(url) {
+            if (!url) return;
+            var uri = new Uri( url );
+            return uri.host() != window.location.host ? uri : null;
+        }
+        function redirect_to(uri, method, args) {
+            if (!uri) return;
+            var redirect = new Uri( window.location )
+                .setHost( uri.host() )
+                .setPort( uri.port() );
+
+            if (method == 'post') {
+                var form = $('<form></form>').attr({
+                    'method': 'POST',
+                    'action': redirect.toString(),
+                });
+                if (args) {
+                    for (var i in args) {
+                        form.append(
+                            $('<input type=hidden>')
+                                .attr({
+                                    'name': i,
+                                    'value': args[i],
+                                })
+                        );
+                    }
+                }
+                $('body').append(form);
+                form.submit();
+            }
+            else {
+                if (args) {
+                    var qs = '';
+                    for (var i in args) {
+                        if (qs) qs = qs + '&';
+                        qs = qs + i + '=' + args[i];
+                    }
+                    redirect.setQuery(qs);
+                }
+                window.location = redirect.toString();
+            }
         }
         /* This would be called from a specific task.  It's passed a function
          * ref, that we want to inject and run in the scope of the iframe */
