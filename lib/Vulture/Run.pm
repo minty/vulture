@@ -44,15 +44,12 @@ sub get {
     my $existing = $self->rs('Job')->search({
         client_id => $client->id,
         state     => 'running',
+    }, {
+        order_by => 'created_at',
+        rows     => 1,
     });
-    return $self->to_json(
-        { running => [ map { {
-            id        => $_->id,
-            run_id    => $_->run_id,
-            client_id => $_->client_id,
-        } } $existing->all ] },
-        { delay => 3 }
-    ) if $existing->count;
+    return $self->on_timer_finish($existing->first)
+        if $existing->count;
 
     $client->update({ last_seen => time });
 
