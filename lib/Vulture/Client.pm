@@ -7,8 +7,10 @@ use common::sense;
 #get '/client/' => sub {
 sub hq {
     my ($self) = @_;
-    $self->stash(
-    );
+    my %stash = map { $_ => $self->param( $_ ) }
+                grep { defined $self->param( $_ ) }
+                qw<client_id app_id restart>;
+    $self->stash(%stash);
     return $self->render(template => 'hq');
 }
 
