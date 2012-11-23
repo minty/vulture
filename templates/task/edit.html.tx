@@ -1,6 +1,6 @@
-[% WRAPPER "_page.tx" WITH body_class = 'taskedit', type = 'index' %]
+[% WRAPPER "_page.tx" WITH body_class = 'taskedit', type = 'index', codemirror = 1 %]
 
-<textarea name=task tabindex=2>[% task %]</textarea>
+<div id=code><textarea name=task tabindex=2>[% task %]</textarea></div>
 
 <h1>Edit task</h1>
 
@@ -19,6 +19,15 @@
 <iframe src="[% task_data.url |html %]"></iframe>
 
 <script type="text/javascript">
+
+    var editor = CodeMirror.fromTextArea( $('#code textarea').get(0), {
+        tabindex: 3,
+        lineNumbers: true,
+        indentUnit: 4,
+        lineWrapping: true,
+        matchBrackets: true,
+        undoDepth: 1000,
+    });
 
     // On load.
     var redirect = redirect_required( $('input[name=url]').val() );
@@ -42,7 +51,7 @@
     });
 
     function save_test(success_function, error_function) {
-        var js  = $('textarea').val();
+        var js  = editor.getValue(); // or without codemirror: $('textarea').val();
         var id  = $('input[name="id"]').val();
         var url = $('input[name="url"]').val();
 
@@ -62,12 +71,11 @@
 
     function run_task() {
         var id     = $('input[name="id"]').val();
-        var tests  = $('textarea');
         clear_log();
         var script = document.createElement('script');
         script.type = 'text/javascript';
         script.class = 'autoscript';
-        script.textContent = tests.val();
+        script.textContent = editor.getValue();
         $('head').get(0).appendChild(script);
         var dt = new Date;
         $('#console')

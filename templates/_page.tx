@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html>
   <head>
+    [% IF codemirror # place before our css %]
+    <link rel="stylesheet" href="/codemirror/codemirror.css">
+    <script src="/codemirror/codemirror.js"></script>
+    <script src="/codemirror/javascript.js"></script>
+    [% END %]
     <style>
       body {
         font-family: sans-serif;
@@ -74,13 +79,21 @@
       .taskedit input[name="url"] {
         width: 30em;
       }
-      .taskedit textarea {
+      .taskedit #code {
         position: fixed;
         top: 0;
         right: 0;
         height: 50%;
-        background: #eee;
         width: 50%;
+        z-index: 1;
+        background: #eee;
+      }
+      .taskedit .CodeMirror,
+      .taskedit .CodeMirror-scroll {
+        height: 100%;
+      }
+      .taskedit #code .CodeMirror-matchingbracket {
+        color: #c00;
       }
       #console {
         font-size: 80%;
