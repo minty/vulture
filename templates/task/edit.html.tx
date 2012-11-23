@@ -23,6 +23,27 @@
 
 <script type="text/javascript">
 
+    // On load.
+    var redirect = redirect_required( $('input[name=url]').val() );
+    if (redirect) { redirect_to( redirect ) }
+
+    // When you change the input for test url
+    $('input[name=url]').on('blur', function() {
+        var redirect = redirect_required( $('input[name=url]').val() );
+        if (redirect) {
+            var q = "Domain change requires redirect\n\n"
+                  + "Save changes & redirect?";
+            if (!confirm(q)) return;
+            save_test(
+                function(data) { redirect_to( redirect ) },
+                function(xhr, status) {
+                    var id = $('input[name="id"]').val();
+                    console.log('error saving task ' + id + ' ' + status);
+                }
+            );
+        }
+    });
+
     function save_test(success_function, error_function) {
         var js  = $('textarea').val();
         var id  = $('input[name="id"]').val();
