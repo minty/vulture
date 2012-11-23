@@ -126,6 +126,18 @@
                 if (data.run) {
                     var task = data.run.run;
                     var msg = '';
+
+                    var redirect = redirect_required( task.task_data.url );
+                    if (redirect) {
+                        stop_working();
+                        redirect_to(redirect, 'post', {
+                            'restart':   1,
+                            'client_id': client_id,
+                            'app_id':    localStorage.app_id
+                        });
+                        return;
+                    }
+
                     iframe.attr('src', task.task_data.url );
                     iframe.off('load.autoscript');
                     iframe.on('load.autoscript', function() {
@@ -229,6 +241,7 @@
     });
     tick();
 
+    [% IF restart %]after_connect()[% END %]
   });
 </script>
 [% END %]
