@@ -4,6 +4,8 @@
 // the CodeMirror function. Below that, at the bottom of the file,
 // some utilities are defined.
 
+// http://codemirror.net/LICENSE
+
 // CodeMirror is the only global var we claim
 window.CodeMirror = (function() {
   "use strict";

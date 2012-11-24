@@ -1,5 +1,7 @@
 // TODO actually recognize syntax of TypeScript constructs
 
+// http://codemirror.net/LICENSE
+
 CodeMirror.defineMode("javascript", function(config, parserConfig) {
   var indentUnit = config.indentUnit;
   var jsonMode = parserConfig.json;
