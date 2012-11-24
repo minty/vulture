@@ -67,6 +67,9 @@
         width: 800px;
         height: 100%;
       }
+      .taskedit h1 {
+        margin: 0.5em 0;
+      }
       .taskedit iframe {
         position: fixed;
         left: 0;
@@ -76,8 +79,21 @@
         height: 50%;
         background: #fff;
       }
+      .taskedit ol {
+        width: 50;
+        list-style: none;
+        padding: 0;
+        position: relative;
+      }
+      .taskedit ol label {
+        font-size: 85%;
+        display: inline-block;
+        width: 8em;
+      }
+      .taskedit input[name="name"],
       .taskedit input[name="url"] {
         width: 30em;
+        margin-top: 0.5em;
       }
       .taskedit #code {
         position: fixed;

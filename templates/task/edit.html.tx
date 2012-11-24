@@ -5,14 +5,15 @@
 <h1>Edit task</h1>
 
 <input type=hidden name=id value="[% id %]">
-<div>
-  task url: <input type=text name=url value="[% task_data.url |html %]" tabindex=1>
-</div>
+<ol>
+  <li><label>task url:</label><input type=text name=url value="[% task_data.url |html %]" tabindex=1></li>
+  <li><label>task name:</label><input type=text name=name value="[% task_data.name | html %]" tabindex=2></li>
+</ol>
 
 <p>
-<input type=button value=run tabindex=3>
-<input type=button id=lar value="load &amp; run" tabindex=4>
-<input type=button value=save tabindex=5>
+<input type=button value=run tabindex=4>
+<input type=button id=lar value="load &amp; run" tabindex=5>
+<input type=button value=save tabindex=6>
 <span id=console></span>
 </p>
 
@@ -51,9 +52,10 @@
     });
 
     function save_test(success_function, error_function) {
-        var js  = editor.getValue(); // or without codemirror: $('textarea').val();
-        var id  = $('input[name="id"]').val();
-        var url = $('input[name="url"]').val();
+        var js   = editor.getValue(); // or without codemirror: $('textarea').val();
+        var id   = $('input[name="id"]').val();
+        var url  = $('input[name="url"]').val();
+        var name = $('input[name="name"]').val();
 
         console.log(id);
         console.log(url);
@@ -63,6 +65,7 @@
             'data': {
                 'task_js': js,
                 'url'    : url,
+                'name'   : name,
             },
             'success': success_function,
             'error': error_function,

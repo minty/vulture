@@ -75,12 +75,15 @@ sub save {
     # associated meta data in a seperate but parallel .json file.
 
     my $ref = {
-        id  => $task_id,
-        url => $url,
+        id   => $task_id,
+        url  => $url,
+        name => $self->param('name') || '',
     };
 
     write_file $path, $js;
     write_file "$path.json", $self->json->encode($ref);
+
+    $self->rs('Task')->update_or_create($ref);
 
     return $self->to_json(
         { saved => { task_id => $task_id } },

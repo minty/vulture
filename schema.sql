@@ -47,5 +47,9 @@ CREATE TABLE job_result (
 );
 DROP TABLE IF EXISTS task;
 CREATE TABLE task (
-    id INTEGER PRIMARY KEY AUTOINCREMENT
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    -- These are denormal cols.  The files on disk are authorative.
+    -- These are meant for indexing etc.
+    name TEXT NOT NULL,
+    url  TEXT NOT NULL
 );
