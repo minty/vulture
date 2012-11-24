@@ -90,4 +90,13 @@ sub save {
     );
 }
 
+sub list {
+    my ($self) = @_;
+
+    $self->stash(
+        tasks => $self->rs('Task')->search_rs(),
+    );
+    return $self->render(template => 'task/list');
+}
+
 1;

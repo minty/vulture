@@ -1,0 +1,22 @@
+[% WRAPPER "_page.tx" WITH body_class = 'tasklist', type = 'list' %]
+
+<h1>List tasks</h1>
+
+<ol>
+  <li class=header>
+    <span class=id>id</span>
+    <span class=name>name</span>
+    <span class=url>url</span>
+  </li>
+  [% FOR task IN array(tasks) %]
+    <li>
+      <a href="[% api_base() %]/task/edit/[% task.id %]">
+        <span class=id>[% task.id %]</span>
+        <span class=name>[% task.name %]</span>
+        <span class=url>[% task.url %]</span>
+      </a>
+    </li>
+  [% END %]
+</ol>
+
+[% END %]

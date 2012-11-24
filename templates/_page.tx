@@ -10,10 +10,12 @@
       body {
         font-family: sans-serif;
       }
+      .taskedit h1 a,
       .run h1 a {
         text-decoration: none;
-        color: 000;
+        color: #000;
       }
+      .taskedit h1 a:hover,
       .run h1 a:hover {
         text-decoration: underline;
       }
@@ -67,6 +69,39 @@
         width: 800px;
         height: 100%;
       }
+      .tasklist ol {
+        list-style: none;
+        padding: 0;
+      }
+      .tasklist li {
+        padding: 0.25em 1em;
+        font-size: 85%;
+      }
+      .tasklist li:hover:not(.header) {
+        background: #ddd;
+      }
+      .tasklist li.header {
+        font-weight: bold;
+        border-bottom: 1px solid #eee;
+      }
+      .tasklist li a {
+        text-decoration: none;
+        color: #000;
+      }
+      .tasklist li span {
+        overflow: hidden;
+        display: inline-block;
+        white-space: nowrap;
+        position: relative;
+        top: 0.25em;
+        text-overflow: ellipsis;
+      }
+      .tasklist li:not(.header) .id {
+        font-size: 80%;
+      }
+      .tasklist .id   { width: 10% }
+      .tasklist .name { width: 40%; margin-right: 1em; }
+      .tasklist .url  { width: 40% }
       .taskedit h1 {
         margin: 0.5em 0;
       }

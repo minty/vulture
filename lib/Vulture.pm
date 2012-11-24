@@ -196,6 +196,8 @@ sub startup {
     $r->get("$base/ip/show")
         ->to(controller => 'ip', action => 'show');
 
+    $r->get("$base/task/list/")
+        ->to(controller => 'task', action => 'list');
     $r->get("$base/task/edit/")
         ->to(controller => 'task', action => 'edit');
     $r->get("$base/task/edit/:task_id")
