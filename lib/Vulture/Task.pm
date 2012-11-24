@@ -100,8 +100,17 @@ sub list {
             if $self->param( $field );
     }
 
+    my $page = $self->param('page');
+    $page = 1
+        if $page !~ /\A\d+\z/;
+
+    my $args = {
+        rows => 20,
+        page => $page,
+    };
+
     $self->stash(
-        tasks   => $self->rs('Task')->search_rs($conds),
+        tasks   => $self->rs('Task')->search_rs($conds, $args),
         filters => \%filters,
     );
     return $self->render(template => 'task/list');

@@ -16,6 +16,9 @@
         text-decoration: none;
         color: #000;
       }
+      .tasklist h1 {
+        color: #ccc;
+      }
       .tasklist h1 a:hover,
       .taskedit h1 a:hover,
       .run h1 a:hover {

@@ -1,6 +1,20 @@
 [% WRAPPER "_page.tx" WITH body_class = 'tasklist', type = 'list' %]
 
-<h1><a href="[% api_base() %]/task/list">List task</a></h1>
+[% p = tasks.pager %]
+
+<h1>
+[% IF p.previous_page %]
+  <a href="[% c.url_with.query([ page => p.previous_page ]) %]">«</a>
+[% ELSE %]
+  «
+[% END %]
+<a href="[% api_base() %]/task/list">List task</a>
+[% IF p.next_page %]
+  <a href="[% c.url_with.query([ page => p.next_page ]) %]">»</a>
+[% ELSE %]
+  »
+[% END %]
+</h1>
 
 [% MACRO filter_input(slug) BLOCK %]
     <span class=[% slug %]>
