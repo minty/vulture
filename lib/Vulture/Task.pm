@@ -93,8 +93,16 @@ sub save {
 sub list {
     my ($self) = @_;
 
+    my $conds = {};
+    my %filters = map { $_ => scalar $self->param($_) || '' } qw<name url>;
+    for my $field (qw<name url>) {
+        $conds->{ $field } = { -like => '%' . $self->param( $field ) . '%' }
+            if $self->param( $field );
+    }
+
     $self->stash(
-        tasks => $self->rs('Task')->search_rs(),
+        tasks   => $self->rs('Task')->search_rs($conds),
+        filters => \%filters,
     );
     return $self->render(template => 'task/list');
 }

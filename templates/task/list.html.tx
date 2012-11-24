@@ -1,12 +1,24 @@
 [% WRAPPER "_page.tx" WITH body_class = 'tasklist', type = 'list' %]
 
-<h1>List tasks</h1>
+<h1><a href="[% api_base() %]/task/list">List task</a></h1>
 
+[% MACRO filter_input(slug) BLOCK %]
+    <span class=[% slug %]>
+      [% slug %]
+      <input type=text name=[% slug %] value="[% filters.$slug | html %]">
+      <input type=submit name=submit value=filter>
+      [% IF filters.$slug %]
+        <a href="[% c.url_with.query([ $slug , '' ]) %]" title="remove filter">x</a>
+      [% END %]
+    </span>
+[% END %]
+
+<form method=GET>
 <ol>
   <li class=header>
     <span class=id>id</span>
-    <span class=name>name</span>
-    <span class=url>url</span>
+    [% filter_input('name') %]
+    [% filter_input('url') %]
   </li>
   [% FOR task IN array(tasks) %]
     <li>
@@ -18,5 +30,6 @@
     </li>
   [% END %]
 </ol>
+</form>
 
 [% END %]

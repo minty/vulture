@@ -11,10 +11,12 @@
         font-family: sans-serif;
       }
       .taskedit h1 a,
+      .tasklist h1 a,
       .run h1 a {
         text-decoration: none;
         color: #000;
       }
+      .tasklist h1 a:hover,
       .taskedit h1 a:hover,
       .run h1 a:hover {
         text-decoration: underline;
@@ -84,9 +86,32 @@
         font-weight: bold;
         border-bottom: 1px solid #eee;
       }
+      .tasklist li.header input {
+        margin-left: 1em;
+        font-size: 80%;
+      }
+      .tasklist li.header input[type="submit"] {
+        display: none;
+      }
       .tasklist li a {
         text-decoration: none;
         color: #000;
+      }
+      .tasklist li.header a {
+        font-size: 60%;
+        color: #999;
+        border: 1px solid #ccc;
+        padding: 2px;
+        position: relative;
+        left: -2.5em;
+        top: -1px;
+        z-index: 1;
+        background: #eee;
+      }
+      .tasklist li.header a:hover {
+        color: #333;
+        background: #ddd;
+        border-color: #999;
       }
       .tasklist li span {
         overflow: hidden;
